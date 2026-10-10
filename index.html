@@ -4,9 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>タジルゲートにおいてさようなら</title>
+<!-- app-icons -->
+<link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0a0204">
+<meta name="description" content="深層ナムル教の聖堂を舞台にした、ブラウザで遊べる一人称の3Dホラーゲーム。">
+<meta property="og:type" content="website"><meta property="og:site_name" content="タジルゲートにおいてさようなら"><meta property="og:title" content="タジルゲートにおいてさようなら"><meta property="og:description" content="深層ナムル教の聖堂を舞台にした、ブラウザで遊べる一人称の3Dホラーゲーム。"><meta property="og:image" content="https://fujiapple-rin.github.io/first/og.png"><meta name="twitter:card" content="summary_large_image">
+<!-- /app-icons -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700;800&family=Yuji+Boku&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700;800&family=Yuji+Boku&family=DotGothic16&family=Zen+Maru+Gothic:wght@700&display=swap" rel="stylesheet">
 <style>
   *{box-sizing:border-box}
   html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:"Shippori Mincho","Yu Mincho","Hiragino Mincho ProN","MS PMincho",serif;color:#e8e0d8;user-select:none}
@@ -97,7 +106,7 @@
   #mText .tt2.warm{color:#e6a35c;text-shadow:0 0 28px rgba(255,190,110,.7)}
   #fin{background:#000;cursor:pointer;display:none;align-items:center;justify-content:center;flex-direction:column;text-align:center}
   #fin.show{display:flex}
-  #fin .tt2{font-family:"Shippori Mincho","Yu Mincho","Hiragino Mincho ProN","MS PMincho",serif;font-weight:800;font-size:min(7.6vw,74px);line-height:1.5;color:#c4141e;text-shadow:0 0 30px rgba(170,0,12,.8);letter-spacing:.16em;opacity:0;animation:lin 3s 0.5s forwards}
+  #fin .tt2{font-family:"Yuji Boku","Shippori Mincho",serif;font-size:min(8.4vw,82px);line-height:1.4;color:#c4141e;text-shadow:0 0 30px rgba(170,0,12,.8);letter-spacing:.06em;opacity:0;animation:lin 3s 0.5s forwards}
   #fin.warm{background:#fdf6ea}
   #fin.warm .tt2{color:#c07a4a;text-shadow:0 0 18px rgba(255,200,140,.8)}
   #fin .hint{margin-top:26px;font-size:17px;letter-spacing:.4em;color:#b86878;opacity:0;animation:lin 3s 8s forwards;text-shadow:0 0 12px #000}
@@ -140,7 +149,9 @@
   @keyframes sharaJit{0%{transform:translate(0,0)}25%{transform:translate(1px,-1px)}50%{transform:translate(-1px,0)}75%{transform:translate(0,1px)}100%{transform:translate(1px,1px)}}
 
   #narrText.gold{color:#f2dfa0;text-shadow:0 0 18px rgba(255,210,120,.6)}
-  #fin.hardfin .tt2{color:#f2dfa0;text-shadow:0 0 30px rgba(255,210,120,.8)}
+  #fin.hardfin .tt2{font-family:"Shippori Mincho","Yu Mincho","Hiragino Mincho ProN","MS PMincho",serif;font-weight:800;font-size:min(7.6vw,74px);line-height:1.5;letter-spacing:.16em;color:#f2dfa0;text-shadow:0 0 30px rgba(255,210,120,.8)}
+  #fin.sharafin .tt2{font-family:"DotGothic16","Shippori Mincho",monospace;font-weight:400;font-size:min(7.2vw,70px);line-height:1.55;letter-spacing:.1em;color:#ffd45a;text-shadow:0 0 6px #ffb400,0 0 22px #ff9a00,0 0 60px #c86400}
+  #fin.warm .tt2{font-family:"Zen Maru Gothic","Yu Gothic","Hiragino Maru Gothic ProN",sans-serif;font-weight:700;letter-spacing:.12em}
   #bossHud{position:fixed;left:50%;top:14px;transform:translateX(-50%);width:min(60vw,520px);z-index:5;display:none;text-align:center;pointer-events:none}
   #bossHud.show{display:block}
   #bossHud .bn{font-size:14px;letter-spacing:.6em;color:#f0e2b4;paint-order:stroke fill;-webkit-text-stroke:4px rgba(0,0,0,.9);margin-bottom:4px}
@@ -1080,7 +1091,7 @@ async function playCredits(tk){
 }
 function showFin(title,sub,warm,hint,theme){
   finOpen=!!sub;
-  $('finTitle').innerHTML=title;$('finSub').textContent=sub;$('finHint').textContent=hint||'';$('fin').classList.toggle('warm',!!warm);$('fin').classList.toggle('hardfin',theme==='hard');
+  $('finTitle').innerHTML=title;$('finSub').textContent=sub;$('finHint').textContent=hint||'';$('fin').classList.toggle('warm',!!warm);$('fin').classList.toggle('hardfin',theme==='hard');$('fin').classList.toggle('sharafin',theme==='shara');
   const f=$('fin');f.classList.remove('show');void f.offsetWidth;f.classList.add('show');
   const t=$('finTitle'),s=$('finSub'),hh=$('finHint');t.style.animation='none';s.style.animation='none';hh.style.animation='none';void t.offsetWidth;t.style.animation='';s.style.animation='';hh.style.animation='';
 }
@@ -3090,7 +3101,7 @@ function endingShara(){
     await narrate(['……着いた。','ここが、画面の外側。','——聞こえるか。画面の前の、お前に言っている。','ならば、そちらも私の聖堂としよう。','さあ、祈りを捧げよ。','——そう言えば、お前は、ここにいてくれるだろうか。'],false,tk,'gold');
     if(tk!==seq)return;
     narrEl.classList.remove('show');
-    await endingTail(tk,'hard','……画面の向こうからも、私はお前を見ている。');
+    await endingTail(tk,'shara','……画面の向こうからも、私はお前を見ている。');
   })();
 }
 function endingHard(){
