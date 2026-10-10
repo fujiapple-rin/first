@@ -2396,9 +2396,10 @@ const homMat=new THREE.SpriteMaterial({map:flameTex,color:0xb0102a,blending:THRE
 const relicMat=new THREE.SpriteMaterial({map:flameTex,color:0xfff0b0,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true});
 const spikeMat=std(0xe6dcc0,.4),warnMat=new THREE.MeshBasicMaterial({color:0xff2a2a,transparent:true,opacity:.5,side:THREE.DoubleSide,depthWrite:false});
 const curtMat=new THREE.MeshStandardMaterial({color:0x06030a,roughness:.5,emissive:0x400010,emissiveIntensity:.9}),gapMat=new THREE.MeshBasicMaterial({color:0xffe0a0,transparent:true,opacity:.3,depthWrite:false});
+function heartsText(p,max){const f=Math.floor(p+1e-9),fr=Math.round((p-f)*4),part=['','◔','◑','◕'][fr]||'';return '♥'.repeat(f)+part+'♡'.repeat(Math.max(0,max-f-(part?1:0)));}
 function bossHud(){
   bossFill.style.width=(boss.hp/boss.max*100)+'%';
-  heartsEl.textContent='♥'.repeat(boss.php)+'♡'.repeat(boss.maxP-boss.php)+(boss.held?'　◉ 神器を持っている':'');
+  heartsEl.textContent=heartsText(boss.php,boss.maxP)+(boss.stock>0?'　◉ 神器 × '+boss.stock:'');
 }
 function startBoss(){
   state='bossready';finale=null;const nz=namu.z;
@@ -2409,12 +2410,12 @@ function startBoss(){
 }
 function clearAttacks(){
   while(bossG.children.length)bossG.remove(bossG.children[0]);
-  boss.orbs=[];boss.proj=[];boss.spikes=[];boss.thr=[];boss.curt=[];boss.hands=[];boss.mins=[];boss.mets=[];boss.sweeps=[];boss.pils=[];boss.ult=null;boss.held=false;bossVuln=false;
+  boss.orbs=[];boss.proj=[];boss.spikes=[];boss.thr=[];boss.curt=[];boss.hands=[];boss.mins=[];boss.mets=[];boss.sweeps=[];boss.pils=[];boss.ult=null;boss.held=false;boss.stock=0;bossVuln=false;
 }
 function bossReset(first,keepP2){
   const nz=namu.z,p2=keepP2&&boss&&boss.phase===2;
   if(boss)clearAttacksSafe();else while(bossG.children.length)bossG.remove(bossG.children[0]);
-  boss={hp:6,max:6,maxP:5,php:5,phase:p2?2:1,inv:0,t:0,volT:5,vulnT:0,volleyT:2.2,spikeT:4,homT:5,curtT:6,held:false,orbs:[],proj:[],spikes:[],thr:[],curt:[],hands:[],mins:[],mets:[],sweeps:[],pils:[],ult:null,rage:false,spT:5,handT:p2?5:8,minT:p2?4:6,resp:0,nz};
+  boss={hp:6,max:6,maxP:5,php:5,phase:p2?2:1,inv:0,t:0,volT:5,vulnT:0,volleyT:2.2,spikeT:4,homT:5,curtT:6,held:false,stock:0,orbs:[],proj:[],spikes:[],thr:[],curt:[],hands:[],mins:[],mets:[],sweeps:[],pils:[],ult:null,rage:false,spT:5,handT:p2?5:8,minT:p2?12:20,resp:0,nz};
   bossVuln=false;
   if(p2){namu.setRage(false);scene.fog.color.setHex(0x040001);scene.fog.density=.05;if(ac)musPlay('boss2');}
   for(let i=0;i<2;i++)spawnOrb();
@@ -2437,7 +2438,7 @@ function spawnOrb(){
 function bossThrow(){
   if(state==='boss'&&boss&&boss.picked){const n=boss.pl[boss.pi];boss.pt=n?n[0]:boss.pend;return;}
   if(state!=='boss'||!boss.held)return;
-  boss.held=false;bossHud();
+  boss.stock--;boss.held=boss.stock>0;bossHud();
   const sp=new THREE.Sprite(relicMat);sp.scale.set(1.4,1.4,1);sp.position.set(P.x,1.4,P.z-.5);bossG.add(sp);boss.thr.push({sp,tgt:aimMinion()});
   if(ac){osc({f0:900,f1:300,dur:.3,vol:.12,send:.6});noiseBurst({dur:.25,f0:3000,f1:600,vol:.15,type:'bandpass',q:2,send:.4});}
 }
@@ -2553,8 +2554,13 @@ function aimMinion(){
 }
 function hitMinion(m){
   m.hp--;if(ac)noiseBurst({dur:.3,f0:2400,f1:300,vol:.3,type:'bandpass',q:3,send:.5});
-  if(m.hp<=0){m.dying=.35;if(m.ring.parent)bossG.remove(m.ring);if(ac)osc({f0:1200,f1:300,dur:.3,vol:.1,send:.6});}
+  if(m.hp<=0){m.dying=.35;bossKillHeal();if(m.ring.parent)bossG.remove(m.ring);if(ac)osc({f0:1200,f1:300,dur:.3,vol:.1,send:.6});}
   else{m.stun=.8;say('まだ倒れない……もう一度！',1600);}
+}
+function bossKillHeal(){
+  const B=boss;if(!B||B.php>=B.maxP)return;
+  const amt=SHARA()?.25:.5;B.php=Math.min(B.maxP,B.php+amt);bossHud();
+  say('敵を退けた。神器の加護が、傷を癒やした……（♥ +'+amt+'）',1800);
 }
 function updateMinions(dt){
   const B=boss,P2=B.phase===2,D=dfc();
@@ -2666,7 +2672,7 @@ const sigilTex=mk(512,512,(g,w,h)=>{
 });
 function startRage(){
   const B=boss;state='rage';phaseT=0;B.rage=true;bossVuln=false;clearAttacksSafe();
-  B.orbs=[];B.proj=[];B.spikes=[];B.thr=[];B.curt=[];B.hands=[];B.mins=[];B.mets=[];B.sweeps=[];B.pils=[];B.ult=null;B.held=false;
+  B.orbs=[];B.proj=[];B.spikes=[];B.thr=[];B.curt=[];B.hands=[];B.mins=[];B.mets=[];B.sweeps=[];B.pils=[];B.ult=null;B.held=false;B.stock=0;
   for(let i=0;i<2;i++)spawnOrb();
   bossHud();if(ac){musHit();growl(.9,3);screech();}
   musPlay('boss3');namu.setRage(true);
@@ -2789,14 +2795,14 @@ function bossHit(){
 }
 /* second form: black, jagged, harsher attacks. the boss bar and your hearts refill. */
 function applyPhase2(){
-  boss.phase=2;boss.hp=6;boss.max=6;boss.php=5;clearAttacksSafe();boss.orbs=[];boss.proj=[];boss.spikes=[];boss.thr=[];boss.curt=[];boss.hands=[];boss.mins=[];boss.mets=[];boss.sweeps=[];boss.pils=[];boss.ult=null;boss.held=false;bossVuln=false;
+  boss.phase=2;boss.hp=6;boss.max=6;boss.php=5;clearAttacksSafe();boss.orbs=[];boss.proj=[];boss.spikes=[];boss.thr=[];boss.curt=[];boss.hands=[];boss.mins=[];boss.mets=[];boss.sweeps=[];boss.pils=[];boss.ult=null;boss.held=false;boss.stock=0;bossVuln=false;
   for(let i=0;i<2;i++)spawnOrb();
   namu.phase2();musPlay('boss2');scene.fog.color.setHex(0x040001);scene.fog.density=.05;
   bossFill.style.background='linear-gradient(90deg,#5a0010,#d01830)';bossHudEl.querySelector('.bn').textContent='ナムル ―― 第二形態';
-  boss.handT=5;boss.minT=4;boss.spT=5;boss.volT=3.5;boss.volleyT=2.4;boss.spikeT=3.5;boss.homT=5;boss.curtT=6;bossHud();
+  boss.handT=5;boss.minT=12;boss.spT=5;boss.volT=3.5;boss.volleyT=2.4;boss.spikeT=3.5;boss.homT=5;boss.curtT=6;bossHud();
 }
 function startPhase2(){
-  state='phase2';phaseT=0;bossVuln=false;clearAttacksSafe();boss.orbs=[];boss.proj=[];boss.spikes=[];boss.thr=[];boss.curt=[];boss.hands=[];boss.mins=[];boss.mets=[];boss.sweeps=[];boss.pils=[];boss.ult=null;boss.held=false;
+  state='phase2';phaseT=0;bossVuln=false;clearAttacksSafe();boss.orbs=[];boss.proj=[];boss.spikes=[];boss.thr=[];boss.curt=[];boss.hands=[];boss.mins=[];boss.mets=[];boss.sweeps=[];boss.pils=[];boss.ult=null;boss.held=false;boss.stock=0;
   bossHud();if(ac){musHit();growl(.9,3);}
   fadeTo(.9,60,'#fff');setTimeout(()=>fadeTo(0,900),120);shakeAmt=.08;
   say('ナムル「ぐっ……この私が、ここまで追い詰められるとは……！ 真の姿を、晒すしかあるまい……！」',4200);
@@ -2810,7 +2816,7 @@ let fin2=null,blade=null,bits=[];
 function bossWin(){
   const B=boss;B.swordPhase=true;B.swT=0;bossVuln=true;
   bossHudEl.classList.remove('show');heartsEl.classList.remove('show');
-  clearAttacksSafe();B.orbs=[];B.proj=[];B.spikes=[];B.thr=[];B.curt=[];B.hands=[];B.mins=[];B.mets=[];B.sweeps=[];B.pils=[];B.ult=null;B.held=false;
+  clearAttacksSafe();B.orbs=[];B.proj=[];B.spikes=[];B.thr=[];B.curt=[];B.hands=[];B.mins=[];B.mets=[];B.sweeps=[];B.pils=[];B.ult=null;B.held=false;B.stock=0;
   scene.fog.color.setHex(0x040001);scene.fog.density=.05;
   if(!bossG.parent)world.add(bossG);
   const nz=B.nz,w=F.w,sx=clamp(P.x+rnd(-3,3),-(w/2-2),w/2-2),sz=clamp(P.z-7,nz+9,3);
@@ -2915,7 +2921,7 @@ function bossUpdate(dt){
     B.curtT-=dt;if(B.curtT<=0&&!bossVuln){B.curtT=rnd(5.5,7);spawnCurtain();}
   }
   B.handT-=dt;if(B.handT<=0&&!bossVuln){B.handT=(P2?rnd(5,6.5):rnd(7,9))*(SHARA()?.8:1);if(SHARA()||!P2)spawnHands();}
-  B.minT-=dt;if(B.minT<=0&&!bossVuln){B.minT=P2?rnd(6,8):rnd(8,11);if(B.mins.filter(m=>!m.dying).length<(P2?3:2)+(SHARA()?1:0))spawnMinion();}
+  B.minT-=dt;if(B.minT<=0&&!bossVuln){B.minT=P2?rnd(20,28):rnd(25,35);if(B.mins.filter(m=>!m.dying).length<(P2?3:2)+(SHARA()?1:0))spawnMinion();}
   if(P2){B.spT-=dt;if(B.spT<=0&&!bossVuln&&!B.ult){B.spT=B.rage?rnd(3.2,4.5):rnd(4.8,6.5);
     const pool=['meteor','sweep','fan'].filter(k=>k!==B.lastSp),k=pool[Math.random()*pool.length|0];B.lastSp=k;
     if(k==='meteor')spawnMeteors();else if(k==='sweep')spawnSweep(Math.random()<.5?-1:1);else{fireFan(0,6.3,B.nz-.4,8,1.5,7.5,projMat,1.0);say('ナムルの怒りの弾幕……隙間に入れ！',1800);}}}
@@ -2945,9 +2951,9 @@ function bossUpdate(dt){
   }
   for(let i=B.orbs.length-1;i>=0;i--){
     const o=B.orbs[i];o.sp.position.y=.9+Math.sin(t*2+o.p)*.15;
-    if(!B.held&&Math.hypot(P.x-o.x,P.z-o.z)<1.2){B.held=true;bossG.remove(o.sp);B.orbs.splice(i,1);B.resp=3;bossHud();if(ac)osc({f0:600,f1:1200,dur:.25,vol:.12,send:.6});}
+    if(Math.hypot(P.x-o.x,P.z-o.z)<1.2){B.stock=(B.stock||0)+1;B.held=true;bossG.remove(o.sp);B.orbs.splice(i,1);B.resp=3;bossHud();if(ac)osc({f0:600,f1:1200,dur:.25,vol:.12,send:.6});}
   }
-  if(B.orbs.length+(B.held?1:0)<2){B.resp-=dt;if(B.resp<=0){B.resp=3;spawnOrb();}}
+  if(B.orbs.length<2){B.resp-=dt;if(B.resp<=0){B.resp=3;spawnOrb();}}
   for(let i=B.thr.length-1;i>=0;i--){
     const th=B.thr[i],s=th.sp,tg=th.tgt&&B.mins.includes(th.tgt)&&!th.tgt.dying?th.tgt:null;
     if(th.tgt&&!tg)th.tgt=null;
