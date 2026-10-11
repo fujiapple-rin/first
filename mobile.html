@@ -2399,7 +2399,8 @@ actBtn.addEventListener('click',e=>{e.stopPropagation();readBook();});
 actBtn.addEventListener('touchstart',e=>{e.stopPropagation();e.preventDefault();readBook();},{passive:false});
 function placeBook(R,w,h,len,endZ){
   bookObj=null;bookNear=false;if(bookRun[fi])return;
-  if(fi===7&&!(SHARA()?store.get('shara'):anyCleared()))return;
+  /* hard and shara: the last volume is not lying in the final hall; it drops where Namu falls (see finalBookDrop) */
+  if(fi===7&&(HARD()||!anyCleared()))return;
   const bad=[];
   for(const hz of F.hz||[]){
     const zs=[hz.z,hz.z0,hz.z1].filter(Number.isFinite);if(!zs.length)continue;
@@ -2438,6 +2439,14 @@ function readBook(){
   try{if(document.pointerLockElement)document.exitPointerLock();}catch(e){}
   if(ac){noiseBurst({dur:.25,f0:3000,f1:900,vol:.18,type:'bandpass',q:1,send:.3});bell(98);}
   runMovie(bookScript(ch,kd),{dread:.3,card:bookCard(ch,kd),cardMs:2400,sfx:()=>{if(ac)bell(73.4);},onDone:endBook});
+}
+/* the last volume drops where Namu falls: read right after the boss is beaten, then on to the ending */
+function finalBookDrop(next){
+  const kd=SHARA()?'s':'n',key=BKEY(kd,7);
+  if(store.get(key)){next();return;}
+  store.set(key,'1');bookRun[7]=true;
+  const script=[{sc:BK(kd)[7].sc[0],lines:['……ナムルの倒れた跡に、','一冊の本が落ちていた。']},...bookScript(7,kd)];
+  runMovie(script,{dread:.3,card:bookCard(7,kd),cardMs:2400,sfx:()=>{if(ac)bell(73.4);},onDone:()=>{hideScreens();showBG(false);next();}});
 }
 function endBook(){
   seq++;hideScreens();showBG(false);show3D(true);fadeTo(0,0);fadeCard('','','');state='play';
@@ -3028,7 +3037,7 @@ function finisherUpdate(dt){
     at(8.4,()=>say('ナムル「あ……ああ……闇が……消えて……ゆく……」',2800));
     if(since>1.2){const q=clamp((since-1.2)/2.4,0,1);namu.mon.scale.setScalar(Math.max(.02,1-q*q)+Math.sin(T*50)*.02*(1-q));}
     at(11.2,()=>fadeTo(1,1200,'#fff'));
-    if(T>12.6&&!fin2.over){fin2.over=true;bossVuln=false;state='ending';SHARA()?endingShara():endingHard();}
+    if(T>12.6&&!fin2.over){fin2.over=true;bossVuln=false;finalBookDrop(()=>{state='ending';SHARA()?endingShara():endingHard();});}
   }
 }
 function bossUpdate(dt){
