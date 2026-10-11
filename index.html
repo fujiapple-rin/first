@@ -131,6 +131,11 @@
   #menu.shara #menuList li{color:#f2d890}
   #menu.shara #menuList li.sel{color:#fff0b8;text-shadow:0 0 14px rgba(255,200,60,.95)}
   #menu.shara #menuList li.sel::before{color:#ffd45a}
+  #menu.shara .org{margin-bottom:26px!important}
+  #tt .edit{position:relative;display:inline-block}
+  #tt .edit s{position:absolute;left:0;top:-.66em;font-size:.34em;letter-spacing:.12em;white-space:nowrap;color:rgba(255,150,150,.8);text-decoration:line-through;text-decoration-thickness:2px;text-shadow:none}
+  #tt .c.pen{text-decoration:line-through;text-decoration-color:#ff7070;text-decoration-thickness:4px}
+  #tt .c.hand{font-family:"Yuji Boku","Shippori Mincho",serif;color:#fffbe0}
   #menu.shara::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 1px,rgba(0,0,0,0) 1px 3px);mix-blend-mode:overlay;animation:visFlick 7s steps(1) infinite}
   @keyframes visFlick{0%,92%,100%{opacity:1;transform:translateX(0)}93%{opacity:.4;transform:translateX(3px)}95%{opacity:1;transform:translateX(-2px)}97%{opacity:.6;transform:translateX(0)}}
   #menu #menuList li[data-k="shara"],#menu #menuList li[data-k="shara"].sel{color:#fff3c0;letter-spacing:.5em;text-shadow:0 0 3px #5a2000,0 0 12px #ffb000,0 0 30px #ff8a00,0 0 60px #b84400,0 0 100px #6a1000;animation:sharaPulse 1s ease-in-out infinite alternate,sharaJit .18s steps(2) infinite}
@@ -887,7 +892,7 @@ function visitorTitleBG(g,w,h,t){
   /* the player's own screen lights this side of the room */
   glow(g,w*.08,h*.85,h*.7,'rgba(150,190,255,A)',.09);
   /* the hero speaks, now and then */
-  const L=['聞こえるか。','ここにいる。','——お前の、すぐそばに。','画面の傷は、私がつけた。'],k=Math.floor(t/5)%L.length,ph=(t%5)/5,al=Math.max(0,Math.min(1,Math.sin(ph*Math.PI)*1.6));
+  const L=['聞こえるか。','ここにいる。','——お前の、すぐそばに。','画面の傷は、私がつけた。','題名は、私が書き換えた。'],k=Math.floor(t/5)%L.length,ph=(t%5)/5,al=Math.max(0,Math.min(1,Math.sin(ph*Math.PI)*1.6));
   ftx(g,L[k],w*.3,h*.6,m*.045,'rgba(255,236,190,'+(al*.8).toFixed(2)+')');
   /* a horizontal tear of the picture, once in a while */
   const gl=(t*.7)%7;if(gl<.12){const ty=h*hash(Math.floor(t*.7)),th=h*.04;g.drawImage(g.canvas,0,ty,w,th,(hash(Math.floor(t*.7)+1)-.5)*w*.05,ty,w,th);}
@@ -929,12 +934,19 @@ function hideScreens(){['menu','movie','narr','credits','fin'].forEach(id=>$(id)
 /* title text with crawling letters */
 function buildTitle(){
   const tt=$('tt');tt.innerHTML='';
-  const lines=curTheme==='shara'?['画面の外側において','こんにちは']:['タジルゲートにおいて','さようなら'];
-  lines.forEach((ln,li)=>{
-    [...ln].forEach(ch=>{
-      const s=document.createElement('span');s.className='c';s.textContent=ch;
-      s.style.setProperty('--dx',rnd(-1.5,1.5)+'px');s.style.setProperty('--dy',rnd(-4,4)+'px');s.style.setProperty('--r',rnd(-4,4)+'deg');s.style.setProperty('--d',rnd(1.6,4.5)+'s');
-      s.style.animationDelay=(-rnd(0,3))+'s';tt.appendChild(s);
+  const addChar=(ch,parent)=>{
+    const s=document.createElement('span');s.className='c';s.textContent=ch;
+    s.style.setProperty('--dx',rnd(-1.5,1.5)+'px');s.style.setProperty('--dy',rnd(-4,4)+'px');s.style.setProperty('--r',rnd(-4,4)+'deg');s.style.setProperty('--d',rnd(1.6,4.5)+'s');
+    s.style.animationDelay=(-rnd(0,3))+'s';parent.appendChild(s);
+  };
+  /* after the shara ending the hero rewrites the title himself: the old words stay, struck through, above his new ones */
+  const lines=curTheme==='shara'?[[{old:'タジルゲート',nw:'画面の外側'},'において'],[{old:'さようなら',nw:'こんにちは'}]]:[['タジルゲートにおいて'],['さようなら']];
+  lines.forEach((line,li)=>{
+    line.forEach(part=>{
+      if(typeof part==='string'){[...part].forEach(ch=>addChar(ch,tt));return;}
+      const wrap=document.createElement('span');wrap.className='edit';
+      const old=document.createElement('s');old.textContent=part.old;wrap.appendChild(old);
+      [...part.nw].forEach(ch=>addChar(ch,wrap));tt.appendChild(wrap);
     });
     if(li<lines.length-1)tt.appendChild(document.createElement('br'));
   });
@@ -947,7 +959,13 @@ function startGlitch(){
   clearInterval(glitchIv);
   glitchIv=setInterval(()=>{
     const cs=[...document.querySelectorAll('#tt .c')];
-    if(curTheme==='shara'){if(cs.length===14&&menuEl.classList.contains('show')&&Math.random()<.5){const tail=cs.slice(9),old=tail.map(c=>c.textContent);[...'さようなら'].forEach((ch,i)=>{tail[i].textContent=ch;});setTimeout(()=>tail.forEach((c,i)=>{c.textContent=old[i];}),rnd(140,260));}return;}
+    if(curTheme==='shara'){
+      if(cs.length&&menuEl.classList.contains('show')){
+        if(Math.random()<.5&&cs.length===14){const tail=cs.slice(9),old=tail.map(c=>c.textContent);[...'さようなら'].forEach((ch,i)=>{tail[i].textContent=ch;});setTimeout(()=>tail.forEach((c,i)=>{c.textContent=old[i];}),rnd(140,260));}
+        else{const c=pick(cs),o=c.textContent,nw=pick([...'私彼聖堂此処']);c.classList.add('pen');setTimeout(()=>{c.textContent=nw;c.classList.remove('pen');c.classList.add('hand');},500);setTimeout(()=>{c.textContent=o;c.classList.remove('hand');},rnd(3200,4800));}
+      }
+      return;
+    }
     if(curTheme||!cs.length||!menuEl.classList.contains('show'))return;
     const c=pick(cs),o=c.textContent,nm=pick(['ナ','ム','ル']);c.textContent=nm;c.classList.add('nam');
     setTimeout(()=>{c.textContent=o;c.classList.remove('nam');},rnd(120,320));
