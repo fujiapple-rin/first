@@ -348,7 +348,7 @@ const store={get(k){try{return localStorage.getItem('tj_'+k);}catch(e){return nu
 /* account save: the local store is mirrored to this viewer's own db document, so progress follows them to other devices */
 const SAVE={doc:null,timer:0,busy:false,again:false};
 /* only progress is mirrored (endings and volumes); device settings such as graphics and volume stay per device */
-const saveKeyOk=k=>/^tj_(happy|namuru|hard|shara|bk\d+|sk\d+)$/.test(k);
+const saveKeyOk=k=>/^tj_(happy|namuru|hard|shara|exh|bk\d+|sk\d+)$/.test(k);
 function saveSnapshot(){const o={};try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&saveKeyOk(k))o[k]=localStorage.getItem(k);}}catch(e){}return o;}
 function saveCanon(o){return JSON.stringify(Object.keys(o).sort().map(k=>[k,o[k]]));}
 function saveQueue(){if(!SAVE.doc)return;clearTimeout(SAVE.timer);SAVE.timer=setTimeout(saveFlush,1500);}
@@ -1123,7 +1123,12 @@ function openResetConfirm(){
   menuItems=[{t:'リセットする',f:doReset},{t:'やめる',f:()=>openSettings()}];
   $('ach').textContent='エンディングの記録、ヒント、タイトルの変化、集めた本がすべて消えます';renderMenu();
 }
-function doReset(){['happy','namuru','hard','shara','bk0','bk1','bk2','bk3','bk4','bk5','bk6','bk7','sk0','sk1','sk2','sk3','sk4','sk5','sk6','sk7'].forEach(k=>{try{localStorage.removeItem('tj_'+k);}catch(e){}});showTitle();}
+/* clears exactly the progress keys that are synced; the account copy is emptied too, or the next load would bring every unlock back */
+function doReset(){
+  Object.keys(saveSnapshot()).forEach(k=>{try{localStorage.removeItem(k);}catch(e){}});
+  if(SAVE.doc){try{SAVE.doc.set({data:{}}).catch(()=>{});}catch(e){}}
+  showTitle();
+}
 function openDifficulty(){menuMode='diff';subMenu(true);sel=SET.diff==='easy'?0:SET.diff==='shara'?3:HARD()?2:1;buildDiff();}
 const sharaOpen=()=>!!(store.get('happy')&&store.get('namuru')&&store.get('hard'));
 function buildDiff(){
@@ -2515,7 +2520,7 @@ function buildOmakeRoot(){
   const cnt=k=>BK(k).filter((b,i)=>store.get(BKEY(k,i))).length;
   menuItems=[
     {t:'深層ナムル教の書　（'+cnt('n')+' / 8）',desc:'各階層に一冊ずつ置かれた、教団の書。全八章がそろうと、物語が完成する。',f:()=>openOmakeList('n')},
-    (store.get('exh')?{t:'エキストラ',k:'extraH',desc:'ナムルを討った者の、その後。',f:()=>runMovie(EXTRA_H,EXH_OPT(()=>{showTitle();openOmake();}))}:{t:'？？？？',desc:'ハードで、ナムルを倒すと手に入る。',f:()=>{}}),
+    ((store.get('exh')&&store.get('hard'))?{t:'エキストラ',k:'extraH',desc:'ナムルを討った者の、その後。',f:()=>runMovie(EXTRA_H,EXH_OPT(()=>{showTitle();openOmake();}))}:{t:'？？？？',desc:'ハードで、ナムルを倒すと手に入る。',f:()=>{}}),
     (sharaOpen()?{t:'シャラバイの書　（'+cnt('s')+' / 8）',k:'shara',desc:'シャラバイで見つかる、もうひとつの書。多元の聖堂の物語。',f:()=>openOmakeList('s')}:{t:'？？？？',desc:'鍵がかかっている。',f:()=>{}}),
     {t:'戻る',f:closeOmake,desc:''}];
   if(cnt('n')===8&&cnt('s')===8)menuItems.splice(3,0,{t:'エキストラ　——　真実',k:'extra',desc:'すべての書を読み終えた者にだけ、開かれる。',f:()=>runMovie(EXTRA,{dread:.3,card:'',cardMs:900,sfx:()=>{if(ac)bell(73.4);},onDone:()=>{showTitle();openOmake();}})});
