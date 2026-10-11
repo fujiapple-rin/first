@@ -285,7 +285,32 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 function rng(s){return()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 const FONT='"Shippori Mincho","Yu Mincho","Hiragino Mincho ProN","MS PMincho",serif';
 const TFONT='"Yuji Boku","Shippori Mincho","Yu Mincho",serif';
-const store={get(k){try{return localStorage.getItem('tj_'+k);}catch(e){return null;}},set(k,v){try{localStorage.setItem('tj_'+k,v);}catch(e){}}};
+const store={get(k){try{return localStorage.getItem('tj_'+k);}catch(e){return null;}},set(k,v){try{localStorage.setItem('tj_'+k,v);}catch(e){}saveQueue();}};
+/* account save: the local store is mirrored to this viewer's own db document, so progress follows them to other devices */
+const SAVE={doc:null,timer:0,busy:false,again:false};
+function saveSnapshot(){const o={};try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('tj_'))o[k]=localStorage.getItem(k);}}catch(e){}return o;}
+function saveCanon(o){return JSON.stringify(Object.keys(o).sort().map(k=>[k,o[k]]));}
+function saveQueue(){if(!SAVE.doc)return;clearTimeout(SAVE.timer);SAVE.timer=setTimeout(saveFlush,1500);}
+async function saveFlush(){if(!SAVE.doc)return;if(SAVE.busy){SAVE.again=true;return;}SAVE.busy=true;try{await SAVE.doc.set({data:saveSnapshot()});}catch(e){}SAVE.busy=false;if(SAVE.again){SAVE.again=false;saveQueue();}}
+async function saveSync(){
+  try{
+    const claude=window.claude;if(!claude)return;
+    const db=await claude.use('db'),user=await claude.use('user');if(!db||!user)return;
+    const uid=await user.id();if(!uid)return;
+    SAVE.doc=db.doc('data/users/'+uid+'/save');
+    const snap=await SAVE.doc.get();
+    const remote=snap.exists?(snap.data()||{}).data:null;
+    if(!remote||typeof remote!=='object'){await SAVE.doc.set({data:saveSnapshot()});return;}
+    const local=saveSnapshot();
+    if(saveCanon(remote)===saveCanon(local))return;
+    /* the account copy is newer: adopt it, then reload once so the game reads it from the start */
+    for(const k of Object.keys(local))localStorage.removeItem(k);
+    for(const k of Object.keys(remote))localStorage.setItem(k,remote[k]);
+    let done=false;try{done=sessionStorage.getItem('tj_synced')==='1';sessionStorage.setItem('tj_synced','1');}catch(e){}
+    if(!done)location.reload();
+  }catch(e){}
+}
+saveSync();
 const DEF_DIFF='normal',DEF_GFX='high';
 const SET={diff:store.get('diff')||DEF_DIFF,vol:parseFloat(store.get('vol')||'.9'),sens:parseFloat(store.get('sens')||'1'),bright:parseFloat(store.get('bright')||'1'),music:parseFloat(store.get('music')||'.8'),gfx:store.get('gfx2')||DEF_GFX};
 if(!['easy','normal','hard','shara'].includes(SET.diff))SET.diff=DEF_DIFF;if(!['low','mid','high'].includes(SET.gfx))SET.gfx=DEF_GFX;
