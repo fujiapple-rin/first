@@ -84,6 +84,8 @@
   #mText .tt2{-webkit-text-stroke:0;paint-order:normal}
   #mText.out{opacity:0}
   #mText p{margin:0;opacity:0;animation:lin 1.4s forwards}
+  #mText.redx p{color:#ffb0b0;text-shadow:0 0 14px rgba(255,40,50,.6),0 0 4px #000}
+  #menu #menuList li[data-k="extraH"],#menu #menuList li[data-k="extraH"].sel{color:#ff4a58;letter-spacing:.38em;text-shadow:0 0 8px #e00018,0 0 22px #a00010,0 0 44px #500008}
   #mText p.em{color:#c4141e;font-size:1.2em;letter-spacing:.22em;animation:bkIn 1.6s ease-out forwards,emPulse 1.8s ease-in-out infinite alternate}
   #mText p.gold{position:relative;font-size:1.12em;letter-spacing:.16em;color:#f8ebc8;-webkit-text-stroke:3px rgba(36,22,4,.85);paint-order:stroke fill;text-shadow:0 0 14px rgba(255,238,190,.6),0 0 38px rgba(255,205,120,.4);animation:bkInG 1.6s ease-out forwards,goldBreath 3.4s ease-in-out infinite alternate}
   #mText p.gold::before{content:'';position:absolute;left:-10%;right:-10%;top:-70%;bottom:-70%;z-index:-1;pointer-events:none;background:radial-gradient(ellipse 50% 50% at 50% 50%,rgba(255,240,196,.3),rgba(255,214,130,.12) 55%,rgba(255,200,110,0) 100%);animation:beamBreath 3.4s ease-in-out infinite alternate}
@@ -1168,7 +1170,7 @@ const mText=$('mText');
 function runMovie(script,opt){
   initAudio();if(ac)ac.resume();
   seq++;hideScreens();state='movie';show3D(false);showBG(true);curMovie=script;movieOpt=opt;bgScene=script[0].sc;bgT=0;
-  mText.className='';mText.innerHTML='';$('movie').classList.add('show');skipBtn.style.display='block';
+  mText.className='';if(opt.cls)mText.classList.add(opt.cls);mText.innerHTML='';$('movie').classList.add('show');skipBtn.style.display='block';
   mv={i:0,l:-1,timer:0,busy:false};setDread(opt.dread||.35);musPlay(opt.music||'movie');
   fadeTo(1,0);setTimeout(()=>fadeTo(0,1200),30);
   movieNext();
@@ -2399,8 +2401,8 @@ actBtn.addEventListener('click',e=>{e.stopPropagation();readBook();});
 actBtn.addEventListener('touchstart',e=>{e.stopPropagation();e.preventDefault();readBook();},{passive:false});
 function placeBook(R,w,h,len,endZ){
   bookObj=null;bookNear=false;if(bookRun[fi])return;
-  /* hard and shara: the last volume is not lying in the final hall; it drops where Namu falls (see finalBookDrop) */
-  if(fi===7&&(HARD()||!anyCleared()))return;
+  /* easy and normal: the last volume lies in the final hall as usual. hard and shara: it drops where Namu falls (see finalBookDrop) */
+  if(fi===7&&HARD())return;
   const bad=[];
   for(const hz of F.hz||[]){
     const zs=[hz.z,hz.z0,hz.z1].filter(Number.isFinite);if(!zs.length)continue;
@@ -2442,11 +2444,19 @@ function readBook(){
 }
 /* the last volume drops where Namu falls: read right after the boss is beaten, then on to the ending */
 function finalBookDrop(next){
-  const kd=SHARA()?'s':'n',key=BKEY(kd,7);
+  const done=()=>{hideScreens();showBG(false);next();};
+  if(!SHARA()){
+    /* hard: what falls is the extra, the story of the one who took Namu's place */
+    const first=!store.get('exh');store.set('exh','1');
+    if(!first){next();return;}
+    runMovie([{sc:EXH_BASE,lines:['……ナムルの倒れた跡に、','一冊の書が落ちていた。']},...EXTRA_H],EXH_OPT(done));
+    return;
+  }
+  const kd='s',key=BKEY(kd,7);
   if(store.get(key)){next();return;}
   store.set(key,'1');bookRun[7]=true;
   const script=[{sc:BK(kd)[7].sc[0],lines:['……ナムルの倒れた跡に、','一冊の本が落ちていた。']},...bookScript(7,kd)];
-  runMovie(script,{dread:.3,card:bookCard(7,kd),cardMs:2400,sfx:()=>{if(ac)bell(73.4);},onDone:()=>{hideScreens();showBG(false);next();}});
+  runMovie(script,{dread:.3,card:bookCard(7,kd),cardMs:2400,sfx:()=>{if(ac)bell(73.4);},onDone:done});
 }
 function endBook(){
   seq++;hideScreens();showBG(false);show3D(true);fadeTo(0,0);fadeCard('','','');state='play';
@@ -2454,13 +2464,57 @@ function endBook(){
   setDread(F.dread);cross.style.display='block';lock();
 }
 function openOmake(){omakeKind=null;menuMode='omake';subMenu(true);sel=0;buildOmakeRoot();}
+const CH_H=[
+ /* the new Namu on the high seat, alone in a hall of empty pews */
+ (g,w,h,t)=>{fvg(g,w,h,'#2a0508','#050102');const m=Math.min(w,h),cx=w/2;
+  glow(g,cx,h*.38,m*.9,'rgba(220,40,50,A)',.26+.05*Math.sin(t));rays(g,cx,h*.3,h,t,'rgba(255,90,90,A)',10,.04,2);
+  for(let r=0;r<7;r++){const y=h*(.62+r*.06),sc=1+r*.3;for(const sd of [-1,1]){g.fillStyle='rgba(34,6,10,'+(.95-r*.05)+')';g.fillRect(cx+sd*m*.28*sc-m*.07*sc,y,m*.14*sc,m*.02*sc);}}
+  g.fillStyle='#12030a';g.beginPath();g.moveTo(cx-m*.13,h*.64);g.lineTo(cx-m*.09,h*.2);g.lineTo(cx+m*.09,h*.2);g.lineTo(cx+m*.13,h*.64);g.closePath();g.fill();
+  g.strokeStyle='rgba(255,90,100,.5)';g.lineWidth=2;g.stroke();
+  fhu(g,cx,h*.62,m*.17,'#000',0);glow(g,cx,h*.4,m*.25,'rgba(255,120,120,A)',.12);
+  motes(g,w,h,t,26,'rgba(255,110,110,A)',.015,2);},
+ /* prayers rise from far below and fade before they reach him */
+ (g,w,h,t)=>{fvg(g,w,h,'#1e0408','#030001');const m=Math.min(w,h),cx=w/2,G='祈り祈';
+  for(let i=0;i<7;i++){const y=h*(.42+i*.09);g.strokeStyle='rgba(180,40,50,'+(.12+i*.04)+')';g.lineWidth=1;g.beginPath();g.moveTo(cx-m*(.1+i*.12),y);g.lineTo(cx+m*(.1+i*.12),y);g.stroke();}
+  for(let i=0;i<34;i++){const k=((t*.07+hash(i))%1),x=w*(.12+hash(i+3)*.76),y=h*(.98-k*.78);
+   ftx(g,G[i%3],x+Math.sin(t*.8+i)*m*.01,y,m*(.022+hash(i+5)*.014),'rgba(255,150,150,'+(Math.max(0,(1-k*1.35))*.7).toFixed(2)+')');}
+  fhu(g,cx,h*.5,m*.1,'#000',0);glow(g,cx,h*.3,m*.5,'rgba(220,40,50,A)',.18);
+  candle(g,cx+m*.14,h*.46,m*.02,t,1);},
+ /* the scripture is rewritten line by line; the faithful kneel and do not notice */
+ (g,w,h,t)=>{fvg(g,w,h,'#1a0408','#030001');const m=Math.min(w,h),cx=w/2,cy=h*.46,sweep=((t*.09)%1.3)*1.3;
+  g.fillStyle='#d9cbb2';g.beginPath();g.moveTo(cx-m*.42,cy-m*.26);g.lineTo(cx,cy-m*.22);g.lineTo(cx+m*.42,cy-m*.26);g.lineTo(cx+m*.42,cy+m*.26);g.lineTo(cx,cy+m*.3);g.lineTo(cx-m*.42,cy+m*.26);g.closePath();g.fill();
+  for(let r=0;r<10;r++){const y=cy-m*.18+r*m*.04,rewritten=r/10<sweep;g.fillStyle=rewritten?'rgba(150,10,25,.8)':'rgba(70,50,40,.55)';
+   g.fillRect(cx-m*.36,y,m*(.3+hash(r)*.05),m*.012);g.fillRect(cx+m*.06,y,m*(.26+hash(r+4)*.06),m*.012);}
+  glow(g,cx,cy,m*.8,'rgba(220,40,50,A)',.16);
+  for(let i=0;i<9;i++)hood(g,w*(.08+i*.105),h*1.0,h*(.16+(i%3)*.02),'#030102');
+  motes(g,w,h,t,18,'rgba(255,110,110,A)',.015,2);},
+ /* a faint step from far below; he waits at the top of the ladder */
+ (g,w,h,t)=>{fvg(g,w,h,'#240509','#030001');const m=Math.min(w,h),cx=w/2;
+  for(const sd of [-1,1]){g.strokeStyle='rgba(200,70,80,.75)';g.lineWidth=4;g.beginPath();g.moveTo(cx+sd*m*.03,h*.2);g.lineTo(cx+sd*m*.2,h*1.02);g.stroke();}
+  for(let i=0;i<12;i++){const k=i/12,y=h*(.22+k*k*.8),hw=m*(.03+k*.17);g.strokeStyle='rgba(200,70,80,'+(.2+k*.55)+')';g.lineWidth=2+k*2;g.beginPath();g.moveTo(cx-hw,y);g.lineTo(cx+hw,y);g.stroke();}
+  const c=((t*.04)%1),cy=h*(.95-c*.55);fhu(g,cx+Math.sin(t*.5)*m*.01,cy,m*(.05+(1-c)*.06),'#000',0);
+  fhu(g,cx,h*.2,m*.1,'#000',0);glow(g,cx,h*.16,m*.5,'rgba(255,100,110,A)',.18+.05*Math.sin(t));
+  ftx(g,'こつ、こつ',w*.2,h*.78,m*.04,'rgba(255,150,150,'+(.35+.3*Math.sin(t*1.3)).toFixed(2)+')');
+  motes(g,w,h,t,16,'rgba(255,110,110,A)',.01,2);},
+];
+const EXH_BASE=SCENES.length;SCENES.push(...CH_H);
+/* ハードでナムルを討った者の、その後。 (the extra for the hard route; shara has its own, 真実) */
+const EXH_CARD='<div class="tt2" style="color:#d41e2a;text-shadow:0 0 28px rgba(220,30,40,.8)">エキストラ<br><span style="font-size:.45em;letter-spacing:.3em">その後</span></div>';
+const EXTRA_H=[
+ {sc:EXH_BASE,lines:['ナムルは倒れ、私が、ナムルになった。','タジルゲートの最奥。世界を支える梯子の、いちばん上の席。','そこには、誰も登ってこない。']},
+ {sc:EXH_BASE+1,lines:['神になれば、誰かが話しかけてくれると思っていた。','祈りは、毎日、八つの階層から届く。','——だが、私に答える声は、ひとつもない。','私が席を立てば、梯子ごと、世界が崩れる。','ナムルの沈黙は、冷淡ではなかった。','今になって、私は、それを知った。']},
+ {sc:EXH_BASE+2,lines:['教典は、書き換えられた。','「ナムル様」の名は、そのまま。入れ替わったのは、座にいる者だけだった。','信徒の多くは、そのことを知らない。','コンチナールは、「届いた祈りの数」で数えられるようになった。','タタッチムを果たした者は、聖人ではなく、「近づいた者」と呼ばれた。']},
+ {sc:EXH_BASE+3,lines:['今日も、誰かが、第七階層を越えた。','遠くから、足音だけが聞こえる。……こつ、こつ。','あの足音が、ここまで届く日を、私は待っている。','——そのとき、私は、何と言えばいいのだろう。']},
+];
+const EXH_OPT=onDone=>({dread:.35,cls:'redx',card:EXH_CARD,cardMs:2800,sfx:()=>{if(ac)bell(73.4);},onDone});
 function buildOmakeRoot(){
   const cnt=k=>BK(k).filter((b,i)=>store.get(BKEY(k,i))).length;
   menuItems=[
     {t:'深層ナムル教の書　（'+cnt('n')+' / 8）',desc:'各階層に一冊ずつ置かれた、教団の書。全八章がそろうと、物語が完成する。',f:()=>openOmakeList('n')},
     (sharaOpen()?{t:'シャラバイの書　（'+cnt('s')+' / 8）',k:'shara',desc:'シャラバイで見つかる、もうひとつの書。多元の聖堂の物語。',f:()=>openOmakeList('s')}:{t:'？？？？',desc:'鍵がかかっている。',f:()=>{}}),
+    (store.get('exh')?{t:'エキストラ',k:'extraH',desc:'ナムルを討った者の、その後。',f:()=>runMovie(EXTRA_H,EXH_OPT(()=>{showTitle();openOmake();}))}:{t:'？？？？',desc:'ハードで、ナムルを倒すと手に入る。',f:()=>{}}),
     {t:'戻る',f:closeOmake,desc:''}];
-  if(cnt('n')===8&&cnt('s')===8)menuItems.splice(2,0,{t:'エキストラ　——　真実',k:'extra',desc:'すべての書を読み終えた者にだけ、開かれる。',f:()=>runMovie(EXTRA,{dread:.3,card:'',cardMs:900,sfx:()=>{if(ac)bell(73.4);},onDone:()=>{showTitle();openOmake();}})});
+  if(cnt('n')===8&&cnt('s')===8)menuItems.splice(3,0,{t:'エキストラ　——　真実',k:'extra',desc:'すべての書を読み終えた者にだけ、開かれる。',f:()=>runMovie(EXTRA,{dread:.3,card:'',cardMs:900,sfx:()=>{if(ac)bell(73.4);},onDone:()=>{showTitle();openOmake();}})});
   $('ach').textContent='おまけ　——　主人公が教え込まれてきた「物語」。';
   renderMenu();
 }
