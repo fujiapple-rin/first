@@ -132,8 +132,8 @@
   #menu.shara #menuList li.sel{color:#fff0b8;text-shadow:0 0 14px rgba(255,200,60,.95)}
   #menu.shara #menuList li.sel::before{color:#ffd45a}
   #menu.shara .org{margin-bottom:26px!important}
-  #tt .edit{position:relative;display:inline-block}
-  #tt .edit s{position:absolute;left:0;top:-.66em;font-size:.34em;letter-spacing:.12em;white-space:nowrap;color:rgba(255,150,150,.8);text-decoration:line-through;text-decoration-thickness:2px;text-shadow:none}
+  .edit{position:relative;display:inline-block}
+  .edit s{position:absolute;left:0;top:-.66em;font-size:.34em;letter-spacing:.12em;white-space:nowrap;color:rgba(255,150,150,.8);text-decoration:line-through;text-decoration-thickness:2px;text-shadow:none}
   #tt .c.pen{text-decoration:line-through;text-decoration-color:#ff7070;text-decoration-thickness:4px}
   #tt .c.hand{font-family:"Yuji Boku","Shippori Mincho",serif;color:#fffbe0}
   #menu.shara::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 1px,rgba(0,0,0,0) 1px 3px);mix-blend-mode:overlay;animation:visFlick 7s steps(1) infinite}
@@ -940,7 +940,7 @@ function buildTitle(){
     s.style.animationDelay=(-rnd(0,3))+'s';parent.appendChild(s);
   };
   /* after the shara ending the hero rewrites the title himself: the old words stay, struck through, above his new ones */
-  const lines=curTheme==='shara'?[[{old:'タジルゲート',nw:'画面の外側'},'において'],[{old:'さようなら',nw:'こんにちは'}]]:[['タジルゲートにおいて'],['さようなら']];
+  const lines=curTheme==='shara'?[[{old:'タジルゲート',nw:'画面のこちら側'},'において'],[{old:'さようなら',nw:'ただいま。'}]]:[['タジルゲートにおいて'],['さようなら']];
   lines.forEach((line,li)=>{
     line.forEach(part=>{
       if(typeof part==='string'){[...part].forEach(ch=>addChar(ch,tt));return;}
@@ -961,7 +961,8 @@ function startGlitch(){
     const cs=[...document.querySelectorAll('#tt .c')];
     if(curTheme==='shara'){
       if(cs.length&&menuEl.classList.contains('show')){
-        if(Math.random()<.5&&cs.length===14){const tail=cs.slice(9),old=tail.map(c=>c.textContent);[...'さようなら'].forEach((ch,i)=>{tail[i].textContent=ch;});setTimeout(()=>tail.forEach((c,i)=>{c.textContent=old[i];}),rnd(140,260));}
+        const last=[...document.querySelectorAll('#tt .edit')].pop(),tail=last?[...last.querySelectorAll('.c')]:[];
+        if(Math.random()<.5&&tail.length===5){const old=tail.map(c=>c.textContent);[...'さようなら'].forEach((ch,i)=>{tail[i].textContent=ch;});setTimeout(()=>tail.forEach((c,i)=>{c.textContent=old[i];}),rnd(140,260));}
         else{const c=pick(cs),o=c.textContent,nw=pick([...'私彼聖堂此処']);c.classList.add('pen');setTimeout(()=>{c.textContent=nw;c.classList.remove('pen');c.classList.add('hand');},500);setTimeout(()=>{c.textContent=o;c.classList.remove('hand');},rnd(3200,4800));}
       }
       return;
@@ -1205,6 +1206,8 @@ async function playCredits(tk){
 function showFin(title,sub,warm,hint,theme){
   finOpen=!!sub;
   let tHtml=title;
+  if(theme==='shara'&&title.indexOf('おいてさようなら')>=0)title='<span class="edit"><s>タジルゲート</s>画面のこちら側</span>に<br>おいて<span class="edit"><s>さようなら</s>ただいま。</span>';
+  tHtml=title;
   if(theme==='namuru'){tHtml=title.split('<br>').map(l=>[...l].map(ch=>'<span class="c" style="--dx:'+rnd(-1.5,1.5).toFixed(1)+'px;--dy:'+rnd(-4,4).toFixed(1)+'px;--r:'+rnd(-4,4).toFixed(1)+'deg;--d:'+rnd(1.6,4.5).toFixed(1)+'s">'+ch+'</span>').join('')).join('<br>');}
   $('finTitle').innerHTML=tHtml;$('finSub').textContent=sub;$('finHint').textContent=hint||'';$('fin').classList.toggle('warm',!!warm);$('fin').classList.toggle('hardfin',theme==='hard');$('fin').classList.toggle('sharafin',theme==='shara');$('fin').classList.toggle('namurufin',theme==='namuru');
   const f=$('fin');f.classList.remove('show');void f.offsetWidth;f.classList.add('show');
