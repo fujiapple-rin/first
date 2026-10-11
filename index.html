@@ -2009,83 +2009,112 @@ function fhu(g,x,y,s,col,pose){
   g.stroke();
 }
 const CH_N=[
- /* vol.0 p1  the four who would remake the world as hell */
- (g,w,h,t)=>{fvg(g,w,h,'#140406','#040102');const m=Math.min(w,h);const N=['ファッシル','ギルジード','リンジュー','ポロイド'];
-  for(let i=0;i<4;i++){const x=w*(.14+i*.24),y=h*.5;glow(g,x,y,m*.2,'rgba(200,40,50,A)',.3+.1*Math.sin(t+i));fhu(g,x,h*.92,m*.3,'#050101',i%2?1:2);ftx(g,N[i],x,h*.15,m*.05,'rgba(230,140,140,.9)');}
-  motes(g,w,h,t,20,'rgba(200,80,80,A)',.02,2);},
- /* vol.0 p2  the remade world stands still, and only embers fall */
- (g,w,h,t)=>{fvg(g,w,h,'#2a2a2c','#0a0a0a');const m=Math.min(w,h);
-  g.fillStyle='#161616';g.fillRect(0,h*.7,w,h*.3);
-  for(let i=0;i<40;i++){const x=w*hash(i),y=h*(.72+hash(i+3)*.25);glow(g,x,y,m*.02,'rgba(150,80,40,A)',.25*(.5+.5*Math.sin(t*2+i)));}
-  fogBand(g,w,h,t,h*.5,'rgba(120,120,120,A)',.25);ftx(g,'滅びの余波',w/2,h*.4,m*.07,'rgba(200,200,200,.5)');},
- /* vol.1 p1  the teacher descends, arms open, into the broken world */
- (g,w,h,t)=>{fvg(g,w,h,'#f0d8a0','#402010');const m=Math.min(w,h),cx=w/2;
-  glow(g,cx,h*.25,m*.9,'rgba(255,240,200,A)',.45);rays(g,cx,h*.25,h*.9,t,'rgba(255,235,190,A)',12,.06,2);
-  fhu(g,cx,h*.92,m*.35,'#2a1408',2);motes(g,w,h,t,22,'rgba(255,240,200,A)',.02,2);},
- /* vol.1 p2  the ladder of salvation, rung by rung */
- (g,w,h,t)=>{fvg(g,w,h,'#10060a','#3a0e18');const cx=w/2,m=Math.min(w,h);glow(g,cx,h*.05,m*.9,'rgba(255,200,120,A)',.4);
-  for(const sd of [-1,1]){g.strokeStyle='#5a3a2a';g.lineWidth=4;g.beginPath();g.moveTo(cx+sd*m*.12,h*.95);g.lineTo(cx+sd*m*.05,h*.08);g.stroke();}
-  for(let i=0;i<10;i++){const y=h*(.9-i*.08),hw=m*(.12-i*.004);g.strokeStyle='rgba(255,200,130,'+(.4+.06*i)+')';g.lineWidth=3;g.beginPath();g.moveTo(cx-hw,y);g.lineTo(cx+hw,y);g.stroke();}
-  const k=(t*.05)%1,y=h*(.9-k*.8);fhu(g,cx,y,m*.1,'#050203',0);},
- /* vol.2 p1  the strain: a light stretched to its limit */
- (g,w,h,t)=>{fvg(g,w,h,'#1a1410','#050403');const m=Math.min(w,h),cx=w/2,cy=h*.45,r=m*(.22+.015*Math.sin(t*.7));
+ /* 0-1  the four who would remake the world: four silhouettes over ash */
+ (g,w,h,t)=>{fvg(g,w,h,'#1a0606','#040102');const m=Math.min(w,h);
+  for(let k=0;k<3;k++){const y=h*(.3+k*.08);glow(g,w/2,y,m*(.9-k*.2),'rgba(160,30,40,A)',.12+.04*Math.sin(t+k));}
+  const N=['ファッシル','ギルジード','リンジュー','ポロイド'],X=[.16,.38,.62,.84];
+  for(let i=0;i<4;i++){const x=w*X[i],s=m*(.26+(i%2)*.04),bob=Math.sin(t*.7+i*1.6)*m*.012;
+    glow(g,x,h*.5+bob,s*1.3,'rgba(220,60,70,A)',.22);
+    fhu(g,x,h*.92,s,'#050101',i%2?1:2);
+    g.fillStyle='rgba(255,120,120,.85)';g.beginPath();g.arc(x-s*.08,h*.42+bob,s*.04,0,7);g.arc(x+s*.08,h*.42+bob,s*.04,0,7);g.fill();
+    ftx(g,N[i],x,h*.1+(i%2)*h*.05,m*.045,'rgba(230,150,150,.85)');}
+  g.fillStyle='rgba(0,0,0,.55)';g.fillRect(0,h*.86,w,h*.14);
+  motes(g,w,h,t,30,'rgba(220,90,90,A)',.02,2);},
+ /* 0-2  the remade world stands still; only embers fall through the ash */
+ (g,w,h,t)=>{fvg(g,w,h,'#2a2a2e','#0a0a0c');const m=Math.min(w,h);
+  for(let r=0;r<6;r++){const y=h*(.6+r*.06);g.fillStyle='rgba(20,20,22,'+(.9-r*.1)+')';g.fillRect(0,y,w,h);}
+  for(let i=0;i<50;i++){const x=w*hash(i),y=h*(.6+hash(i+3)*.4),k=(t*.05+hash(i+9))%1;glow(g,x,y-k*h*.15,m*.012,'rgba(180,90,40,A)',.35*(1-k));}
+  fogBand(g,w,h,t,h*.45,'rgba(150,150,160,A)',.3);fogBand(g,w,h,t*1.3,h*.7,'rgba(120,120,130,A)',.2);
+  ftx(g,'滅びの余波',w/2,h*.35,m*.07,'rgba(210,210,215,.55)');},
+ /* 1-1  Namu descends into the broken world: light through a cracked sphere */
+ (g,w,h,t)=>{fvg(g,w,h,'#2a1a0a','#050300');const m=Math.min(w,h),cx=w/2,cy=h*.42,R=m*.32;
+  glow(g,cx,cy,m*.9,'rgba(255,220,150,A)',.28);
+  g.save();g.beginPath();g.arc(cx,cy,R,0,7);g.clip();g.fillStyle='#1a120a';g.fillRect(cx-R,cy-R,2*R,2*R);
+  for(let i=0;i<14;i++){const a=hash(i)*6.28,l=R*(.4+hash(i+4)*.7);g.strokeStyle='rgba(255,200,120,.5)';g.lineWidth=1.5;g.beginPath();g.moveTo(cx,cy);g.lineTo(cx+Math.cos(a)*l,cy+Math.sin(a)*l);g.stroke();}
+  g.restore();g.strokeStyle='rgba(255,230,170,.9)';g.lineWidth=3;g.beginPath();g.arc(cx,cy,R,0,7);g.stroke();
+  rays(g,cx,cy,h*.95,t,'rgba(255,235,190,A)',14,.05,2);
+  const k=Math.min(1,t*.25);fhu(g,cx,h*.2+k*h*.72,m*.14,'#2a1408',2);
+  motes(g,w,h,t,26,'rgba(255,240,200,A)',.02,2);},
+ /* 1-2  the eight layers rise as light pillars; the ladder climbs through them */
+ (g,w,h,t)=>{fvg(g,w,h,'#0c0604','#000');const m=Math.min(w,h),cx=w/2;
+  for(let i=0;i<8;i++){const y=h*.86-i*h*.1,hw=m*(.22+i*.04);g.fillStyle='rgba(255,'+(170+i*8)+','+(90+i*12)+','+(.12+i*.04)+')';g.fillRect(cx-hw,y,hw*2,h*.06);
+    g.strokeStyle='rgba(255,220,150,'+(.25+i*.06)+')';g.lineWidth=2;g.beginPath();g.moveTo(cx-hw,y);g.lineTo(cx+hw,y);g.stroke();}
+  for(const sd of [-1,1]){g.strokeStyle='rgba(255,200,120,.8)';g.lineWidth=4;g.beginPath();g.moveTo(cx+sd*m*.1,h*.95);g.lineTo(cx+sd*m*.02,h*.06);g.stroke();}
+  for(let i=0;i<8;i++){const y=h*.86-i*h*.1;glow(g,cx,y,m*.3,'rgba(255,200,120,A)',.15);}
+  const k=(t*.06)%1,y=h*(.9-k*.82);fhu(g,cx,y,m*.09,'#050203',0);
+  rays(g,cx,h*.02,h*.9,t,'rgba(255,230,170,A)',10,.04,2);},
+ /* 2-1  a light stretched to its limit over a rift, with cracks that branch */
+ (g,w,h,t)=>{fvg(g,w,h,'#1a1410','#050403');const m=Math.min(w,h),cx=w/2,cy=h*.45,r=m*(.2+.015*Math.sin(t*.7));
+  const br=(x,y,a,len,d)=>{if(d>5)return;const gr=Math.min(1,Math.max(0,t*.4-d*.3));if(gr<=0)return;const x2=x+Math.cos(a)*len*gr,y2=y+Math.sin(a)*len*gr;
+   g.strokeStyle='rgba(255,200,130,'+(.7-d*.1)+')';g.lineWidth=Math.max(1,3-d*.5);g.beginPath();g.moveTo(x,y);g.lineTo(x2,y2);g.stroke();
+   if(gr>=1){br(x2,y2,a-.5,len*.7,d+1);br(x2,y2,a+.5,len*.7,d+1);}};
   glow(g,cx,cy,m*.6,'rgba(255,200,120,A)',.25);
-  g.strokeStyle='rgba(255,210,150,.85)';g.lineWidth=3;g.beginPath();g.ellipse(cx,cy,r*1.6,r,0,0,6.283);g.stroke();
-  for(let i=0;i<8;i++){const a=i*.785+t*.05;g.strokeStyle='rgba(200,150,100,.4)';g.lineWidth=1.5;g.beginPath();g.moveTo(cx+Math.cos(a)*r*1.6,cy+Math.sin(a)*r);g.lineTo(cx+Math.cos(a)*m*.7,cy+Math.sin(a)*m*.7);g.stroke();}
+  g.strokeStyle='rgba(255,210,150,.9)';g.lineWidth=3;g.beginPath();g.ellipse(cx,cy,r*1.6,r,0,0,6.283);g.stroke();
+  for(let i=0;i<6;i++)br(cx+Math.cos(i*1.05)*r*1.6,cy+Math.sin(i*1.05)*r,i*1.05,m*.22,0);
   motes(g,w,h,t,18,'rgba(255,220,170,A)',.01,2);},
- /* vol.2 p2  the void beneath the eighth layer */
- (g,w,h,t)=>{fvg(g,w,h,'#020102','#000');const m=Math.min(w,h),cx=w/2;
-  glow(g,cx,h*.8,m*.5,'rgba(120,30,30,A)',.3+.1*Math.sin(t));
-  g.fillStyle='#000';g.beginPath();g.ellipse(cx,h*.8,m*.42,m*.12,0,0,6.283);g.fill();
-  g.strokeStyle='rgba(180,90,60,.6)';g.lineWidth=2;g.beginPath();g.ellipse(cx,h*.8,m*.42,m*.12,0,0,6.283);g.stroke();
-  motes(g,w,h,t,26,'rgba(160,80,60,A)',.015,2);},
- /* vol.3 p1  tan-tan word, a whirl of broken syllables */
- (g,w,h,t)=>{fvg(g,w,h,'#06040a','#000');const m=Math.min(w,h);const s='タンタンワード';
-  for(let i=0;i<60;i++){const k=i/60,a=i*.5+t*.7,r=Math.pow(k,1.4)*m*.6+m*.03;ftx(g,s[i%s.length],w/2+Math.cos(a)*r*1.2,h/2+Math.sin(a)*r*.8,m*(.02+k*.03),'rgba(200,150,220,'+(.3+k*.5)+')');}
-  glow(g,w/2,h/2,m*.25,'rgba(120,60,160,A)',.3);},
- /* vol.3 p2  a mind held in a cell with no door */
+ /* 2-2  the void beneath: a spiral of cracks falling into a black pit */
+ (g,w,h,t)=>{fvg(g,w,h,'#020102','#000');const m=Math.min(w,h),cx=w/2,cy=h*.78;
+  glow(g,cx,cy,m*.5,'rgba(130,40,30,A)',.3+.08*Math.sin(t));
+  for(let i=0;i<60;i++){const k=i/60,a=i*.4+t*.2,r=Math.pow(k,1.3)*m*.45+m*.03;g.fillStyle='rgba(120,60,50,'+(.15+k*.6)+')';g.fillRect(cx+Math.cos(a)*r*1.4-1,cy+Math.sin(a)*r*.35-1,3,3);}
+  g.fillStyle='#000';g.beginPath();g.ellipse(cx,cy,m*.3,m*.08,0,0,6.283);g.fill();
+  g.strokeStyle='rgba(190,100,70,.7)';g.lineWidth=2;g.beginPath();g.ellipse(cx,cy,m*.3,m*.08,0,0,6.283);g.stroke();
+  motes(g,w,h,t,26,'rgba(170,90,60,A)',.015,2);},
+ /* 3-1  words that spin in a whirl, recursive spirals of broken syllables */
+ (g,w,h,t)=>{fvg(g,w,h,'#06040a','#000');const m=Math.min(w,h),s='タンタンワード';
+  for(let arm=0;arm<3;arm++)for(let i=0;i<40;i++){const k=i/40,a=i*.45+arm*2.09+t*.6,r=Math.pow(k,1.2)*m*.55+m*.02;
+    ftx(g,s[(i+arm)%s.length],w/2+Math.cos(a)*r*1.25,h/2+Math.sin(a)*r*.75,m*(.02+k*.03),'rgba(200,150,230,'+(.25+k*.55)+')');}
+  glow(g,w/2,h/2,m*.22,'rgba(130,70,170,A)',.35);},
+ /* 3-2  a mind held in a cell with no door, the bars drawn in perspective */
  (g,w,h,t)=>{fvg(g,w,h,'#0a0608','#020102');const m=Math.min(w,h);
-  for(let i=0;i<9;i++){g.fillStyle='rgba(90,80,90,.9)';g.fillRect(w*(.1+i*.1),h*.1,m*.02,h*.8);}
-  g.fillStyle='rgba(90,80,90,.9)';g.fillRect(w*.08,h*.1,w*.84,m*.02);g.fillRect(w*.08,h*.9,w*.84,m*.02);
-  const x=w/2+Math.sin(t*.4)*m*.05;fhu(g,x,h*.85,m*.2,'#000',1);glow(g,w/2,h*.5,m*.4,'rgba(160,140,180,A)',.12);},
- /* vol.4 p1  the four great sins, as four lights */
+  for(let i=0;i<11;i++){const x=w*(.1+i*.08),k=Math.abs(i-5)/5;g.fillStyle='rgba(100,90,110,'+(.9-k*.5)+')';g.fillRect(x-m*.012,h*.08,m*.024,h*.84);}
+  g.fillStyle='rgba(90,80,100,.95)';g.fillRect(w*.08,h*.08,w*.84,m*.025);g.fillRect(w*.08,h*.9,w*.84,m*.025);
+  const x=w/2+Math.sin(t*.4)*m*.04;fhu(g,x,h*.88,m*.24,'#000',1);glow(g,w/2,h*.5,m*.45,'rgba(170,150,190,A)',.12);
+  motes(g,w,h,t,16,'rgba(190,170,210,A)',.01,2);},
+ /* 4-1  four lights, one for each sin, over a dark plain */
  (g,w,h,t)=>{fvg(g,w,h,'#0c0a06','#000');const m=Math.min(w,h);const L=['偽楽','暴虐','強欲','閉塞'];
-  for(let i=0;i<4;i++){const x=w*(.2+i*.2),y=h*.42+Math.sin(t*.8+i)*m*.02;glow(g,x,y,m*.16,'rgba(255,170,90,A)',.25);frg(g,x,y,m*.07,'rgba(255,200,130,.7)',2);ftx(g,L[i],x,y,m*.05,'rgba(255,230,190,.9)');}
+  for(let i=0;i<4;i++){const x=w*(.2+i*.2),y=h*.42+Math.sin(t*.8+i)*m*.02;glow(g,x,y,m*.18,'rgba(255,170,90,A)',.25);frg(g,x,y,m*.075,'rgba(255,200,130,.7)',2);frg(g,x,y,m*.11,'rgba(255,180,110,.3)',1);ftx(g,L[i],x,y,m*.05,'rgba(255,230,190,.92)');}
   g.fillStyle='rgba(0,0,0,.6)';g.fillRect(0,h*.78,w,h*.22);motes(g,w,h,t,14,'rgba(255,190,110,A)',.02,2);},
- /* vol.4 p2  the ledge gives way beneath the feet */
+ /* 4-2  the ledge gives way beneath the feet, a figure sliding toward the pit */
  (g,w,h,t)=>{fvg(g,w,h,'#080404','#000');const m=Math.min(w,h);
-  g.fillStyle='#1a1010';g.beginPath();g.moveTo(0,h*.45);g.lineTo(w*.65,h*.6);g.lineTo(w*.65,h);g.lineTo(0,h);g.fill();
-  g.fillStyle='#000';g.beginPath();g.moveTo(w*.65,h*.6);g.lineTo(w,h*.7);g.lineTo(w,h);g.lineTo(w*.65,h);g.fill();
-  const k=(t*.1)%1,x=w*(.2+k*.5),y=h*(.45+k*.2)-m*.02;fhu(g,x,y,m*.12,'#050303',0);
-  glow(g,w*.9,h*.95,m*.5,'rgba(90,30,30,A)',.3);},
- /* vol.5 p1  eight tiers rising in one pyramid */
+  g.fillStyle='#1c1212';g.beginPath();g.moveTo(0,h*.45);g.lineTo(w*.62,h*.58);g.lineTo(w*.62,h);g.lineTo(0,h);g.fill();
+  g.strokeStyle='rgba(120,80,60,.5)';g.lineWidth=2;g.beginPath();g.moveTo(w*.62,h*.58);g.lineTo(w*.66,h*.68);g.lineTo(w*.63,h*.8);g.stroke();
+  g.fillStyle='#000';g.beginPath();g.moveTo(w*.62,h*.58);g.lineTo(w,h*.7);g.lineTo(w,h);g.lineTo(w*.62,h);g.fill();
+  const k=(t*.1)%1,x=w*(.2+k*.42),y=h*(.45+k*.16)-m*.02;fhu(g,x,y,m*.12,'#050303',0);
+  glow(g,w*.9,h*.95,m*.5,'rgba(90,30,30,A)',.3);motes(g,w,h,t,12,'rgba(160,110,90,A)',.02,2);},
+ /* 5-1  the eight tiers rise as one pyramid, each echoed in parallel */
  (g,w,h,t)=>{fvg(g,w,h,'#101014','#040406');const m=Math.min(w,h),cx=w/2;
-  for(let i=0;i<8;i++){const y=h*.92-i*h*.095,half=m*(.42-i*.035),c=i/8;g.fillStyle='rgba('+(50+c*120|0)+','+(50+c*100|0)+','+(60+c*60|0)+',.92)';g.fillRect(cx-half,y-h*.08,half*2,h*.08);}
-  glow(g,cx,h*.1,m*.4,'rgba(255,220,160,A)',.3);},
- /* vol.5 p2  eight lamps, one for each tier */
+  for(let c=3;c>=0;c--){const ox=(c-1.5)*m*.05+Math.sin(t*.5+c)*m*.01,oy=c*m*.02;g.save();g.translate(ox,oy);g.globalAlpha=.25+.15*(3-c)/3;
+   for(let i=0;i<8;i++){const y=h*.92-i*h*.1,half=m*(.42-i*.035),k=i/8;g.fillStyle=c===0?'rgba('+(60+k*110|0)+','+(60+k*100|0)+','+(70+k*60|0)+',.95)':'rgba(90,90,110,.6)';g.fillRect(cx-half,y-h*.085,half*2,h*.085);}
+   g.restore();}
+  g.globalAlpha=1;glow(g,cx,h*.1,m*.4,'rgba(255,220,160,A)',.3);motes(g,w,h,t,16,'rgba(255,220,170,A)',.01,2);},
+ /* 5-2  eight lamps, one for each tier, lit in turn */
  (g,w,h,t)=>{fvg(g,w,h,'#0a0a10','#020204');const m=Math.min(w,h);const N='一二三四五六七八';
-  for(let i=0;i<8;i++){const x=w*(.1+i*.11),bh=h*(.12+i*.07),y=h*.82-bh;const lit=Math.sin(t*.8-i*.4)*.5+.5;g.fillStyle='rgba(60,60,80,.8)';g.fillRect(x-m*.03,y,m*.06,bh);glow(g,x,y,m*.08,'rgba(255,200,130,A)',.2+.2*lit);ftx(g,N[i],x,h*.9,m*.05,'rgba(230,210,180,.85)');}
-  motes(g,w,h,t,18,'rgba(255,220,170,A)',.01,2);},
- /* vol.6 p1  a seam of light across the floor, closing behind the one who passes */
+  for(let i=0;i<8;i++){const x=w*(.1+i*.11),bh=h*(.12+i*.07),y=h*.82-bh,lit=Math.sin(t*.8-i*.5)*.5+.5;
+   g.fillStyle='rgba(60,60,80,.85)';g.fillRect(x-m*.03,y,m*.06,bh);
+   glow(g,x,y,m*.1,'rgba(255,200,130,A)',.15+.35*lit);glow(g,x,y+bh*.5,m*.05,'rgba(255,200,130,A)',.1+.2*lit);
+   ftx(g,N[i],x,h*.9,m*.05,'rgba(230,210,180,.9)');}
+  motes(g,w,h,t,20,'rgba(255,220,170,A)',.01,2);},
+ /* 6-1  a seam of light across the floors, closing behind the one who passes */
  (g,w,h,t)=>{fvg(g,w,h,'#1a0a10','#080306');const m=Math.min(w,h);
-  for(let i=0;i<3;i++){const y=h*(.25+i*.28);g.fillStyle='#2a1018';g.fillRect(0,y,w,m*.03);glow(g,w/2,y,m*.5,'rgba(220,60,70,A)',.08);}
+  for(let i=0;i<3;i++){const y=h*(.25+i*.28);g.fillStyle='#2a1018';g.fillRect(0,y,w,m*.035);glow(g,w/2,y,m*.5,'rgba(220,60,70,A)',.08);}
   const k=(t*.12)%1,y=h*.88-k*h*.62;fhu(g,w/2,y,m*.12,'#000',2);
   const sy=h*.53;frg(g,w/2,sy,m*.05+Math.abs(y-sy)*.05,'rgba(255,200,120,'+Math.max(0,.8-Math.abs(y-sy)/h*3)+')',3);
   motes(g,w,h,t,20,'rgba(255,170,120,A)',.03,2);},
- /* vol.6 p2  the climb is solitary; the way below fades */
+ /* 6-2  the climb is solitary; the path below fades into dark */
  (g,w,h,t)=>{fvg(g,w,h,'#0a0408','#000');const m=Math.min(w,h),cx=w/2;
+  for(let i=0;i<8;i++){const yy=h*(.25+i*.1),k=i/8;g.fillStyle='rgba(200,150,120,'+(.6-k*.5)+')';g.fillRect(cx-m*(.1-k*.02),yy,m*(.2-k*.04),m*.012);}
   const y=h*(.2+((t*.04)%.6));glow(g,cx,y,m*.3,'rgba(255,190,140,A)',.3);
-  for(let i=0;i<6;i++){const yy=h*(.3+i*.12);g.fillStyle='rgba(200,150,120,'+(.5-i*.07)+')';g.fillRect(cx-m*.1+i*m*.02,yy,m*.2-i*m*.04,m*.012);}
   fhu(g,cx,h*.95,m*.14,'#050203',0);motes(g,w,h,t,14,'rgba(255,200,160,A)',.01,2);},
- /* vol.7 p1  Pantramaam: the names are wiped from the record */
+ /* 7-1  Pantramaam: the names are wiped from the record, row by row */
  (g,w,h,t)=>{fvg(g,w,h,'#12080a','#030203');const m=Math.min(w,h),sweep=((t*.1)%1.2)*w*1.2-w*.1;
   for(let r=0;r<9;r++){const y=h*(.12+r*.075);for(let i=0;i<24;i++){const x=w*(.08+i*.037);if(x<sweep)continue;g.fillStyle='rgba(220,210,190,.55)';g.fillRect(x,y,m*.02,m*.03);}}
   g.fillStyle='#000';g.fillRect(0,0,Math.max(0,sweep),h);glow(g,sweep,h/2,m*.5,'rgba(255,60,60,A)',.2);
   const fa=Math.max(0,1-((t*.1)%1.2)*1.1);fhu(g,w*.78,h*.92,m*.2,'rgba(200,190,180,'+fa+')',0);},
- /* vol.7 p2  the sanctuary is sealed; one eye keeps watch, and the ladder is held */
+ /* 7-2  the sanctuary is sealed; one eye keeps watch while the ladder stays held */
  (g,w,h,t)=>{fvg(g,w,h,'#0c0608','#020102');const m=Math.min(w,h);
   for(let i=0;i<7;i++){const x=w*(.1+i*.13);g.fillStyle='#120608';g.fillRect(x-m*.02,h*.6,m*.04,h*.4);}
-  const o=Math.min(1,t*.12);drawEye(g,w/2,h*.4,m*.2*o+1,o,t,'#c01020');glow(g,w/2,h*.4,m*.7,'rgba(200,20,40,A)',.15*o);},
+  const o=Math.min(1,t*.12);drawEye(g,w/2,h*.4,m*.2*o+1,o,t,'#c01020');glow(g,w/2,h*.4,m*.7,'rgba(200,20,40,A)',.15*o);
+  rays(g,w/2,h*.4,h*.9,t,'rgba(200,40,60,A)',9,.03,1.5);},
 ];
 const CH_S=[
  /* 1-A  the world branches */
