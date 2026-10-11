@@ -1005,7 +1005,14 @@ const titleItems=()=>{
   if(anyCleared())it.push({t:'結末の記録',f:()=>openEndings()});
   it.push({t:'おまけ',f:openOmake});it.push({t:'操作方法',f:openManual});return it;
 };
-const pauseItems=()=>[{t:'再開',f:resume},{t:'設定',f:()=>openSettings()},{t:'操作方法',f:openManual},{t:'タイトルへ戻る',f:showTitle}];
+/* DEBUG: stage jump and invincibility, both in the pause menu */
+const pauseItems=()=>[{t:'再開',f:resume},{t:'階層へ移動',f:()=>openDebugFloors()},{t:'無敵：'+(adm.god?'ON':'OFF'),f:()=>{adm.god=!adm.god;menuItems=pauseItems();renderMenu();}},{t:'設定',f:()=>openSettings()},{t:'操作方法',f:openManual},{t:'タイトルへ戻る',f:showTitle}];
+function openDebugFloors(){menuMode='debug';subMenu(true);sel=0;
+  menuItems=FLOORS.map((f,i)=>({t:(i+1)+'　'+fname(f),f:()=>debugJump(i)}));
+  menuItems.push({t:'戻る',f:()=>{menuMode='main';subMenu(false);menuItems=pauseItems();sel=1;renderMenu();}});
+  $('ach').textContent='選んだ階層の最初から始まります';renderMenu();}
+function debugJump(i){buildFloor(i);resetPlayer();$('pauseTitle').style.display='none';$('ttw').style.display='';menuEl.classList.remove('pausing');
+  menuMode='main';subMenu(false);prevState='play';fadeCard(FLOORS[i].no,fname(FLOORS[i]),'','#d33');setTimeout(()=>fadeCard('','',''),1800);resume();}
 const FS_OK=()=>!!(document.documentElement.requestFullscreen||document.documentElement.webkitRequestFullscreen);
 const isFS=()=>!!(document.fullscreenElement||document.webkitFullscreenElement);
 const subMenu=on=>menuEl.classList.toggle('settings',on);
