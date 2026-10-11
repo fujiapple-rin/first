@@ -132,8 +132,10 @@
   #menu.shara #menuList li.sel{color:#fff0b8;text-shadow:0 0 14px rgba(255,200,60,.95)}
   #menu.shara #menuList li.sel::before{color:#ffd45a}
   #menu.shara .org{margin-bottom:26px!important}
+  @media (max-height:520px){#menu.shara .org{margin-bottom:20px!important}#menu.shara .menuBox{top:53%}}
   .edit{position:relative;display:inline-block}
   .edit s{position:absolute;left:0;top:-.66em;font-size:.34em;letter-spacing:.12em;white-space:nowrap;color:rgba(255,150,150,.8);text-decoration:line-through;text-decoration-thickness:2px;text-shadow:none}
+  #tt .c.snap{color:#fff!important;text-shadow:3px 0 #00e5ff,-3px 0 #ff3d9a,0 0 18px #fff!important}
   #tt .c.pen{text-decoration:line-through;text-decoration-color:#ff7070;text-decoration-thickness:4px}
   #tt .c.hand{font-family:"Yuji Boku","Shippori Mincho",serif;color:#fffbe0}
   #menu.shara::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 1px,rgba(0,0,0,0) 1px 3px);mix-blend-mode:overlay;animation:visFlick 7s steps(1) infinite}
@@ -934,7 +936,7 @@ function visitorTitleBG(g,w,h,t){
   /* the player's own screen lights this side of the room */
   glow(g,w*.08,h*.85,h*.7,'rgba(150,190,255,A)',.09);
   /* the hero speaks, now and then */
-  const L=['聞こえるか。','ここにいる。','——お前の、すぐそばに。','画面の傷は、私がつけた。','題名は、私が書き換えた。'],k=Math.floor(t/5)%L.length,ph=(t%5)/5,al=Math.max(0,Math.min(1,Math.sin(ph*Math.PI)*1.6));
+  const L=['聞こえるか。','ここにいる。','——お前の、すぐそばに。','画面の傷は、私がつけた。','題名は、私が書き換えた。','——ここは、私の聖堂だ。'],k=Math.floor(t/5)%L.length,ph=(t%5)/5,al=Math.max(0,Math.min(1,Math.sin(ph*Math.PI)*1.6));
   ftx(g,L[k],w*.3,h*.6,m*.045,'rgba(255,236,190,'+(al*.8).toFixed(2)+')');
   /* a horizontal tear of the picture, once in a while */
   const gl=(t*.7)%7;if(gl<.12){const ty=h*hash(Math.floor(t*.7)),th=h*.04;g.drawImage(g.canvas,0,ty,w,th,(hash(Math.floor(t*.7)+1)-.5)*w*.05,ty,w,th);}
@@ -974,21 +976,27 @@ function say(t,ms=3600){msgEl.textContent=t;msgEl.classList.add('show');clearTim
 function hideScreens(){['menu','movie','narr','credits','fin'].forEach(id=>$(id).classList.remove('show'));manualEl.classList.remove('show');manualOpen=false;skipBtn.style.display='none';}
 
 /* title text with crawling letters */
+/* the hero's own words take over the title's typeface: every character of his, one by one, in a different hand and size */
+const HJ_FONTS=['"Yuji Syuku"','"Kaisei Decol"','"Shippori Mincho"','"Yuji Boku"','"Yu Mincho"'];
+const HJ_SMALL='のにおいてま。';
+function hjStyle(ch,i){const small=HJ_SMALL.includes(ch),n=ch.charCodeAt(0);return{font:HJ_FONTS[(i*3+n)%HJ_FONTS.length]+',serif',size:small?.62:+(1+((i*7+n)%4)*.04).toFixed(2)};}
+function hjSpans(str){return[...str].map((ch,i)=>{const st=hjStyle(ch,i);return'<span style="font-family:'+st.font.replace(/"/g,"'")+';font-size:'+st.size+'em">'+ch+'</span>';}).join('');}
 function buildTitle(){
   const tt=$('tt');tt.innerHTML='';
-  const addChar=(ch,parent)=>{
+  const addChar=(ch,parent,hero,idx)=>{
     const s=document.createElement('span');s.className='c';s.textContent=ch;
     s.style.setProperty('--dx',rnd(-1.5,1.5)+'px');s.style.setProperty('--dy',rnd(-4,4)+'px');s.style.setProperty('--r',rnd(-4,4)+'deg');s.style.setProperty('--d',rnd(1.6,4.5)+'s');
     s.style.animationDelay=(-rnd(0,3))+'s';parent.appendChild(s);
+    if(hero){const st=hjStyle(ch,idx);setTimeout(()=>{s.style.fontFamily=st.font;s.style.fontSize=st.size+'em';s.classList.add('snap');setTimeout(()=>s.classList.remove('snap'),240);},900+idx*160);}
   };
   /* after the shara ending the hero rewrites the title himself: the old words stay, struck through, above his new ones */
-  const lines=curTheme==='shara'?[[{old:'タジルゲート',nw:'画面のこちら側'},'において'],[{old:'さようなら',nw:'ただいま。'}]]:[['タジルゲートにおいて'],['さようなら']];
+  const lines=curTheme==='shara'?[[{old:'タジルゲート',nw:'私の聖堂'},'において'],[{old:'さようなら',nw:'ただいま。'}]]:[['タジルゲートにおいて'],['さようなら']];
   lines.forEach((line,li)=>{
     line.forEach(part=>{
       if(typeof part==='string'){[...part].forEach(ch=>addChar(ch,tt));return;}
       const wrap=document.createElement('span');wrap.className='edit';
       const old=document.createElement('s');old.textContent=part.old;wrap.appendChild(old);
-      [...part.nw].forEach(ch=>addChar(ch,wrap));tt.appendChild(wrap);
+      [...part.nw].forEach((ch,k)=>addChar(ch,wrap,true,k+li*5));tt.appendChild(wrap);
     });
     if(li<lines.length-1)tt.appendChild(document.createElement('br'));
   });
@@ -1004,7 +1012,9 @@ function startGlitch(){
     if(curTheme==='shara'){
       if(cs.length&&menuEl.classList.contains('show')){
         const last=[...document.querySelectorAll('#tt .edit')].pop(),tail=last?[...last.querySelectorAll('.c')]:[];
-        if(Math.random()<.5&&tail.length===5){const old=tail.map(c=>c.textContent);[...'さようなら'].forEach((ch,i)=>{tail[i].textContent=ch;});setTimeout(()=>tail.forEach((c,i)=>{c.textContent=old[i];}),rnd(140,260));}
+        const r=Math.random();
+        if(r<.34&&tail.length===5){const old=tail.map(c=>c.textContent);[...'さようなら'].forEach((ch,i)=>{tail[i].textContent=ch;});setTimeout(()=>tail.forEach((c,i)=>{c.textContent=old[i];}),rnd(140,260));}
+        else if(r<.67){const hj=[...document.querySelectorAll('#tt .edit .c')];if(hj.length){const c=pick(hj);c.style.fontFamily=pick(HJ_FONTS)+',serif';c.classList.add('snap');setTimeout(()=>c.classList.remove('snap'),240);}}
         else{const c=pick(cs),o=c.textContent,nw=pick([...'私彼聖堂此処']);c.classList.add('pen');setTimeout(()=>{c.textContent=nw;c.classList.remove('pen');c.classList.add('hand');},500);setTimeout(()=>{c.textContent=o;c.classList.remove('hand');},rnd(3200,4800));}
       }
       return;
@@ -1251,7 +1261,7 @@ async function playCredits(tk){
 function showFin(title,sub,warm,hint,theme){
   finOpen=!!sub;
   let tHtml=title;
-  if(theme==='shara'&&title.indexOf('おいてさようなら')>=0)title='<span class="edit"><s>タジルゲート</s>画面のこちら側</span>に<br>おいて<span class="edit"><s>さようなら</s>ただいま。</span>';
+  if(theme==='shara'&&title.indexOf('おいてさようなら')>=0)title='<span class="edit"><s>タジルゲート</s>'+hjSpans('私の聖堂')+'</span>に<br>おいて<span class="edit"><s>さようなら</s>'+hjSpans('ただいま。')+'</span>';
   tHtml=title;
   if(theme==='namuru'){tHtml=title.split('<br>').map(l=>[...l].map(ch=>'<span class="c" style="--dx:'+rnd(-1.5,1.5).toFixed(1)+'px;--dy:'+rnd(-4,4).toFixed(1)+'px;--r:'+rnd(-4,4).toFixed(1)+'deg;--d:'+rnd(1.6,4.5).toFixed(1)+'s">'+ch+'</span>').join('')).join('<br>');}
   $('finTitle').innerHTML=tHtml;$('finSub').textContent=sub;$('finHint').textContent=hint||'';$('fin').classList.toggle('warm',!!warm);$('fin').classList.toggle('hardfin',theme==='hard');$('fin').classList.toggle('sharafin',theme==='shara');$('fin').classList.toggle('namurufin',theme==='namuru');
