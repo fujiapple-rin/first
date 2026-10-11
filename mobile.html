@@ -2022,94 +2022,83 @@ function fhu(g,x,y,s,col,pose){
   g.stroke();
 }
 const CH_N=[
- /* 1-A  the silence of Senberg */
- (g,w,h,t)=>{fvg(g,w,h,'#c9ced6','#4a505c');const m=Math.min(w,h);
-  for(let i=0;i<9;i++){const k=((t*.12+i/9)%1);frg(g,w/2,h*.5,k*m*.8,'rgba(255,255,255,'+((1-k)*.5)+')',2);}
-  glow(g,w/2,h*.5,m*.5,'rgba(255,255,255,A)',.5);motes(g,w,h,t,24,'rgba(255,255,255,A)',.01,2);},
- /* 1-B  the world is torn into eight layers */
- (g,w,h,t)=>{fvg(g,w,h,'#aab0bb','#2a2e38');const m=Math.min(w,h),cx=w/2,sp=Math.min(1,t*.12);
-  for(let i=0;i<8;i++){const y0=h*i/8,hh=h/8+1,off=(i%2?1:-1)*sp*w*.06*(.4+hash(i));g.save();g.beginPath();g.rect(0,y0,w,hh);g.clip();g.translate(off,0);
-   g.fillStyle='rgba('+(220-i*18)+','+(224-i*18)+','+(232-i*16)+',.88)';g.fillRect(-w,y0,w*3,hh);g.restore();}
-  g.save();g.strokeStyle='rgba(255,170,60,.9)';g.shadowColor='#f80';g.shadowBlur=m*.05;g.lineWidth=m*.012;g.beginPath();g.moveTo(cx,0);
-  for(let k=1;k<=24;k++){g.lineTo(cx+Math.sin(k*1.7+hash(k)*4)*m*.07*Math.min(1,sp*3),k*h/24);}g.stroke();g.restore();
-  glow(g,cx,h*.5,m*.6,'rgba(255,150,40,A)',.35*Math.min(1,sp*3));},
- /* 2-A  the ladder through the rift */
- (g,w,h,t)=>{fvg(g,w,h,'#10060a','#3a0e18');const cx=w/2,m=Math.min(w,h);glow(g,cx,h*.05,m*.9,'rgba(255,200,120,A)',.5);rays(g,cx,h*.02,h*.9,t,'rgba(255,210,140,A)',9,.12,1.2);
-  for(const sd of [-1,1]){g.fillStyle='#2a1a14';const top=cx+sd*m*.05,bot=cx+sd*m*.22;g.beginPath();g.moveTo(top-3,h*.08);g.lineTo(top+3,h*.08);g.lineTo(bot+8,h);g.lineTo(bot-8,h);g.fill();}
-  for(let i=0;i<14;i++){const k=i/14,y=h*(.1+k*k*.9),half=m*(.05+k*.17);g.fillStyle='#3a261c';g.fillRect(cx-half,y-2,half*2,3+k*4);}
-  for(let i=0;i<4;i++){const k=((t*.05+i*.25)%1),y=h*(.95-k*.85),s=m*(.06+(1-k)*.05);fhu(g,cx+(i%2?-1:1)*m*.02,y,s,'#050203',0);}
-  motes(g,w,h,t,30,'rgba(255,210,140,A)',.02,2);},
- /* 2-B  tatatchimu: passing up through a floor that seals behind */
+ /* vol.2 p1  the strain: a light stretched to its limit */
+ (g,w,h,t)=>{fvg(g,w,h,'#1a1410','#050403');const m=Math.min(w,h),cx=w/2,cy=h*.45,r=m*(.22+.015*Math.sin(t*.7));
+  glow(g,cx,cy,m*.6,'rgba(255,200,120,A)',.25);
+  g.strokeStyle='rgba(255,210,150,.85)';g.lineWidth=3;g.beginPath();g.ellipse(cx,cy,r*1.6,r,0,0,6.283);g.stroke();
+  for(let i=0;i<8;i++){const a=i*.785+t*.05;g.strokeStyle='rgba(200,150,100,.4)';g.lineWidth=1.5;g.beginPath();g.moveTo(cx+Math.cos(a)*r*1.6,cy+Math.sin(a)*r);g.lineTo(cx+Math.cos(a)*m*.7,cy+Math.sin(a)*m*.7);g.stroke();}
+  motes(g,w,h,t,18,'rgba(255,220,170,A)',.01,2);},
+ /* vol.2 p2  the void beneath the eighth layer */
+ (g,w,h,t)=>{fvg(g,w,h,'#020102','#000');const m=Math.min(w,h),cx=w/2;
+  glow(g,cx,h*.8,m*.5,'rgba(120,30,30,A)',.3+.1*Math.sin(t));
+  g.fillStyle='#000';g.beginPath();g.ellipse(cx,h*.8,m*.42,m*.12,0,0,6.283);g.fill();
+  g.strokeStyle='rgba(180,90,60,.6)';g.lineWidth=2;g.beginPath();g.ellipse(cx,h*.8,m*.42,m*.12,0,0,6.283);g.stroke();
+  motes(g,w,h,t,26,'rgba(160,80,60,A)',.015,2);},
+ /* vol.4 p1  the four great sins, as four lights */
+ (g,w,h,t)=>{fvg(g,w,h,'#0c0a06','#000');const m=Math.min(w,h);const L=['偽楽','暴虐','強欲','閉塞'];
+  for(let i=0;i<4;i++){const x=w*(.2+i*.2),y=h*.42+Math.sin(t*.8+i)*m*.02;glow(g,x,y,m*.16,'rgba(255,170,90,A)',.25);frg(g,x,y,m*.07,'rgba(255,200,130,.7)',2);ftx(g,L[i],x,y,m*.05,'rgba(255,230,190,.9)');}
+  g.fillStyle='rgba(0,0,0,.6)';g.fillRect(0,h*.78,w,h*.22);motes(g,w,h,t,14,'rgba(255,190,110,A)',.02,2);},
+ /* vol.4 p2  the ledge gives way beneath the feet */
+ (g,w,h,t)=>{fvg(g,w,h,'#080404','#000');const m=Math.min(w,h);
+  g.fillStyle='#1a1010';g.beginPath();g.moveTo(0,h*.45);g.lineTo(w*.65,h*.6);g.lineTo(w*.65,h);g.lineTo(0,h);g.fill();
+  g.fillStyle='#000';g.beginPath();g.moveTo(w*.65,h*.6);g.lineTo(w,h*.7);g.lineTo(w,h);g.lineTo(w*.65,h);g.fill();
+  const k=(t*.1)%1,x=w*(.2+k*.5),y=h*(.45+k*.2)-m*.02;fhu(g,x,y,m*.12,'#050303',0);
+  glow(g,w*.9,h*.95,m*.5,'rgba(90,30,30,A)',.3);},
+ /* vol.5 p1  eight tiers rising in one pyramid */
+ (g,w,h,t)=>{fvg(g,w,h,'#101014','#040406');const m=Math.min(w,h),cx=w/2;
+  for(let i=0;i<8;i++){const y=h*.92-i*h*.095,half=m*(.42-i*.035),c=i/8;g.fillStyle='rgba('+(50+c*120|0)+','+(50+c*100|0)+','+(60+c*60|0)+',.92)';g.fillRect(cx-half,y-h*.08,half*2,h*.08);}
+  glow(g,cx,h*.1,m*.4,'rgba(255,220,160,A)',.3);},
+ /* vol.5 p2  eight lamps, one for each tier */
+ (g,w,h,t)=>{fvg(g,w,h,'#0a0a10','#020204');const m=Math.min(w,h);const N='一二三四五六七八';
+  for(let i=0;i<8;i++){const x=w*(.1+i*.11),bh=h*(.12+i*.07),y=h*.82-bh;const lit=Math.sin(t*.8-i*.4)*.5+.5;g.fillStyle='rgba(60,60,80,.8)';g.fillRect(x-m*.03,y,m*.06,bh);glow(g,x,y,m*.08,'rgba(255,200,130,A)',.2+.2*lit);ftx(g,N[i],x,h*.9,m*.05,'rgba(230,210,180,.85)');}
+  motes(g,w,h,t,18,'rgba(255,220,170,A)',.01,2);},
+ /* vol.3 p1  tan-tan word, a whirl of broken syllables */
+ (g,w,h,t)=>{fvg(g,w,h,'#06040a','#000');const m=Math.min(w,h);const s='タンタンワード';
+  for(let i=0;i<60;i++){const k=i/60,a=i*.5+t*.7,r=Math.pow(k,1.4)*m*.6+m*.03;ftx(g,s[i%s.length],w/2+Math.cos(a)*r*1.2,h/2+Math.sin(a)*r*.8,m*(.02+k*.03),'rgba(200,150,220,'+(.3+k*.5)+')');}
+  glow(g,w/2,h/2,m*.25,'rgba(120,60,160,A)',.3);},
+ /* vol.3 p2  a mind held in a cell with no door */
+ (g,w,h,t)=>{fvg(g,w,h,'#0a0608','#020102');const m=Math.min(w,h);
+  for(let i=0;i<9;i++){g.fillStyle='rgba(90,80,90,.9)';g.fillRect(w*(.1+i*.1),h*.1,m*.02,h*.8);}
+  g.fillStyle='rgba(90,80,90,.9)';g.fillRect(w*.08,h*.1,w*.84,m*.02);g.fillRect(w*.08,h*.9,w*.84,m*.02);
+  const x=w/2+Math.sin(t*.4)*m*.05;fhu(g,x,h*.85,m*.2,'#000',1);glow(g,w/2,h*.5,m*.4,'rgba(160,140,180,A)',.12);},
+ /* vol.0 p1  the four who would remake the world as hell */
+ (g,w,h,t)=>{fvg(g,w,h,'#140406','#040102');const m=Math.min(w,h);const N=['ファッシル','ギルジード','リンジュー','ポロイド'];
+  for(let i=0;i<4;i++){const x=w*(.14+i*.24),y=h*.5;glow(g,x,y,m*.2,'rgba(200,40,50,A)',.3+.1*Math.sin(t+i));fhu(g,x,h*.92,m*.3,'#050101',i%2?1:2);ftx(g,N[i],x,h*.15,m*.05,'rgba(230,140,140,.9)');}
+  motes(g,w,h,t,20,'rgba(200,80,80,A)',.02,2);},
+ /* vol.0 p2  the remade world stands still, and only embers fall */
+ (g,w,h,t)=>{fvg(g,w,h,'#2a2a2c','#0a0a0a');const m=Math.min(w,h);
+  g.fillStyle='#161616';g.fillRect(0,h*.7,w,h*.3);
+  for(let i=0;i<40;i++){const x=w*hash(i),y=h*(.72+hash(i+3)*.25);glow(g,x,y,m*.02,'rgba(150,80,40,A)',.25*(.5+.5*Math.sin(t*2+i)));}
+  fogBand(g,w,h,t,h*.5,'rgba(120,120,120,A)',.25);ftx(g,'滅びの余波',w/2,h*.4,m*.07,'rgba(200,200,200,.5)');},
+ /* vol.1 p1  the teacher descends, arms open, into the broken world */
+ (g,w,h,t)=>{fvg(g,w,h,'#f0d8a0','#402010');const m=Math.min(w,h),cx=w/2;
+  glow(g,cx,h*.25,m*.9,'rgba(255,240,200,A)',.45);rays(g,cx,h*.25,h*.9,t,'rgba(255,235,190,A)',12,.06,2);
+  fhu(g,cx,h*.92,m*.35,'#2a1408',2);motes(g,w,h,t,22,'rgba(255,240,200,A)',.02,2);},
+ /* vol.1 p2  the ladder of salvation, rung by rung */
+ (g,w,h,t)=>{fvg(g,w,h,'#10060a','#3a0e18');const cx=w/2,m=Math.min(w,h);glow(g,cx,h*.05,m*.9,'rgba(255,200,120,A)',.4);
+  for(const sd of [-1,1]){g.strokeStyle='#5a3a2a';g.lineWidth=4;g.beginPath();g.moveTo(cx+sd*m*.12,h*.95);g.lineTo(cx+sd*m*.05,h*.08);g.stroke();}
+  for(let i=0;i<10;i++){const y=h*(.9-i*.08),hw=m*(.12-i*.004);g.strokeStyle='rgba(255,200,130,'+(.4+.06*i)+')';g.lineWidth=3;g.beginPath();g.moveTo(cx-hw,y);g.lineTo(cx+hw,y);g.stroke();}
+  const k=(t*.05)%1,y=h*(.9-k*.8);fhu(g,cx,y,m*.1,'#050203',0);},
+ /* vol.6 p1  a seam of light across the floor, closing behind the one who passes */
  (g,w,h,t)=>{fvg(g,w,h,'#1a0a10','#080306');const m=Math.min(w,h);
   for(let i=0;i<3;i++){const y=h*(.25+i*.28);g.fillStyle='#2a1018';g.fillRect(0,y,w,m*.03);glow(g,w/2,y,m*.5,'rgba(220,60,70,A)',.08);}
   const k=(t*.12)%1,y=h*.88-k*h*.62;fhu(g,w/2,y,m*.12,'#000',2);
   const sy=h*.53;frg(g,w/2,sy,m*.05+Math.abs(y-sy)*.05,'rgba(255,200,120,'+Math.max(0,.8-Math.abs(y-sy)/h*3)+')',3);
-  g.fillStyle='rgba(0,0,0,.6)';g.fillRect(0,h*.82,w,h*.2);ftx(g,'戻れぬ',w*.85,h*.1,m*.05,'rgba(200,80,80,.7)');motes(g,w,h,t,20,'rgba(255,170,120,A)',.03,2);},
- /* 3-A  kneeling in candlelight */
- (g,w,h,t)=>{fvg(g,w,h,'#1a0b08','#050202');const m=Math.min(w,h);g.fillStyle='#0c0605';g.fillRect(0,h*.72,w,h*.3);
-  for(let i=0;i<8;i++){candle(g,w*(.1+i*.115),h*.55,m*.015,t,i);}
-  for(let i=0;i<7;i++){fhu(g,w*(.14+i*.12),h*.92,m*.18,'#030101',1);}
-  glow(g,w/2,h*.6,m*.9,'rgba(255,150,70,A)',.12);motes(g,w,h,t,24,'rgba(255,190,110,A)',.02,2);},
- /* 3-B  the ledger */
- (g,w,h,t)=>{fvg(g,w,h,'#1c120a','#080403');const m=Math.min(w,h),cx=w/2,cy=h*.52;
-  g.fillStyle='#e8dcc0';g.save();g.translate(cx,cy);g.beginPath();g.moveTo(-m*.5,-m*.28);g.lineTo(0,-m*.24);g.lineTo(m*.5,-m*.28);g.lineTo(m*.5,m*.3);g.lineTo(0,m*.34);g.lineTo(-m*.5,m*.3);g.closePath();g.fill();
-  g.strokeStyle='rgba(60,40,30,.55)';g.lineWidth=1.5;
-  for(let i=0;i<12;i++){const y=-m*.2+i*m*.04,a=Math.max(0,Math.min(m*.36,(t*.4-i*.12)*m)),b=Math.max(0,Math.min(m*.36,(t*.4-i*.12-1.4)*m));g.beginPath();g.moveTo(-m*.42,y);g.lineTo(-m*.42+a,y);g.moveTo(m*.06,y);g.lineTo(m*.06+b,y);g.stroke();}
-  g.restore();candle(g,w*.15,h*.4,m*.03,t,1);candle(g,w*.85,h*.4,m*.03,t,2);glow(g,cx,cy,m*.8,'rgba(255,190,110,A)',.18);
-  for(let i=0;i<6;i++){const k=((t*.08+i/6)%1);g.fillStyle='rgba(232,220,192,'+((1-k)*.6)+')';g.fillRect(w*(.2+hash(i)*.6)+Math.sin(t+i)*20,h*k,m*.04,m*.05);}},
- /* 4-A  the silence, and the thoughts that drift off */
- (g,w,h,t)=>{fvg(g,w,h,'#06060a','#000');const m=Math.min(w,h);glow(g,w/2,h*.55,m*.35,'rgba(200,210,255,A)',.18);fhu(g,w/2,h*.82,m*.2,'#020203',1);
-  const ws=['ああ','なぜ','わたし','いつ','だれ','もう','まだ','ねむい','かえりたい'];
-  for(let i=0;i<22;i++){const k=((t*.1+hash(i))%1),a=hash(i+5)*6.28,r=m*(.12+k*.5);ftx(g,ws[i%ws.length],w/2+Math.cos(a)*r*1.4,h*.5+Math.sin(a)*r*.8,m*.035,'rgba(190,200,230,'+((1-k)*.55)+')');}
-  frg(g,w/2,h*.55,m*.3,'rgba(190,200,255,.12)',1);},
- /* 4-B  the oath loses its meaning and becomes warmth */
- (g,w,h,t)=>{fvg(g,w,h,'#2a0e04','#0a0402');const m=Math.min(w,h),line='私は今日の私を今日ここで切り離す';
-  for(let r=0;r<7;r++){const y=h*(.18+r*.11),dec=Math.min(1,t*.08+r*.1);let s='';for(let i=0;i<line.length;i++)s+=hash(i+r*9)<dec?'・':line[i];ftx(g,s,w/2,y,m*.045,'rgba(255,'+(190-r*14)+','+(120-r*10)+','+(.9-r*.08)+')');}
-  glow(g,w/2,h*.55,m*.9,'rgba(255,120,30,A)',.2+.1*Math.sin(t));
-  for(let i=0;i<30;i++){const x=w*hash(i+3),k=((t*.12+hash(i))%1);glow(g,x,h*(1-k),m*.05,'rgba(255,160,60,A)',.5*(1-k));}},
- /* 5-A  joy and chaos */
- (g,w,h,t)=>{fvg(g,w,h,'#2a0a28','#080210');const m=Math.min(w,h);
-  for(let i=0;i<40;i++){const a=i*.7+t*(.3+hash(i)*.5),r=m*(.1+hash(i+2)*.45);glow(g,w/2+Math.cos(a)*r*1.5,h/2+Math.sin(a*1.3)*r*.8,m*(.06+hash(i)*.08),['rgba(255,60,160,A)','rgba(255,200,60,A)','rgba(120,60,255,A)','rgba(255,80,60,A)'][i%4],.5);}
-  for(let i=0;i<8;i++){fhu(g,w*(.1+i*.11),h*.95,m*.16,'#050105',i%2?2:0);}
-  rays(g,w/2,h*.2,h*.9,t,'rgba(255,120,200,A)',13,.08,2.4);},
- /* 5-B  the endless tan-tan-word spiral */
- (g,w,h,t)=>{g.fillStyle='#050205';g.fillRect(0,0,w,h);const m=Math.min(w,h);
-  for(let i=0;i<60;i++){const k=i/60,a=i*.55+t*.8,r=Math.pow(k,1.6)*m*.62+m*.02;g.save();g.translate(w/2+Math.cos(a)*r*1.4,h/2+Math.sin(a)*r*.85);g.rotate(a+1.57);ftx(g,'タンタンワード',0,0,m*(.012+k*.05),'rgba('+(150+k*90|0)+','+(40+k*30|0)+','+(80+k*60|0)+','+(.15+k*.7)+')');g.restore();}
-  drawEye(g,w/2,h/2,m*.06,.5+.2*Math.sin(t),t,'#a00');},
- /* 6-A  the judging scales */
- (g,w,h,t)=>{fvg(g,w,h,'#10121c','#04050a');const m=Math.min(w,h),cx=w/2;glow(g,cx,h*.35,m*.7,'rgba(160,180,255,A)',.18);
-  g.strokeStyle='#8a90a8';g.lineWidth=m*.012;g.beginPath();g.moveTo(cx,h*.15);g.lineTo(cx,h*.8);g.stroke();
-  g.save();g.translate(cx,h*.22);g.rotate(Math.sin(t*.6)*.12);g.beginPath();g.moveTo(-m*.38,0);g.lineTo(m*.38,0);g.stroke();
-  for(const sd of [-1,1]){g.beginPath();g.moveTo(sd*m*.38,0);g.lineTo(sd*m*.45,m*.3);g.lineTo(sd*m*.31,m*.3);g.closePath();g.stroke();g.beginPath();g.ellipse(sd*m*.38,m*.3,m*.1,m*.025,0,0,7);g.fillStyle='#2a2e40';g.fill();g.stroke();}g.restore();
-  for(let i=0;i<3;i++)frg(g,cx,h*.5,m*(.18+i*.1),'rgba(150,170,255,'+(.25-i*.06)+')',2);
-  g.fillStyle='#07080e';g.fillRect(0,h*.86,w,h*.2);motes(g,w,h,t,18,'rgba(170,190,255,A)',.01,2);},
- /* 6-B  abashikusu: the record is erased */
+  motes(g,w,h,t,20,'rgba(255,170,120,A)',.03,2);},
+ /* vol.6 p2  the climb is solitary; the way below fades */
+ (g,w,h,t)=>{fvg(g,w,h,'#0a0408','#000');const m=Math.min(w,h),cx=w/2;
+  const y=h*(.2+((t*.04)%.6));glow(g,cx,y,m*.3,'rgba(255,190,140,A)',.3);
+  for(let i=0;i<6;i++){const yy=h*(.3+i*.12);g.fillStyle='rgba(200,150,120,'+(.5-i*.07)+')';g.fillRect(cx-m*.1+i*m*.02,yy,m*.2-i*m*.04,m*.012);}
+  fhu(g,cx,h*.95,m*.14,'#050203',0);motes(g,w,h,t,14,'rgba(255,200,160,A)',.01,2);},
+ /* vol.7 p1  Pantramaam: the names are wiped from the record */
  (g,w,h,t)=>{fvg(g,w,h,'#12080a','#030203');const m=Math.min(w,h),sweep=((t*.1)%1.2)*w*1.2-w*.1;
-  for(let r=0;r<9;r++){const y=h*(.12+r*.075);for(let i=0;i<24;i++){const x=w*(.08+i*.037);if(x<sweep)continue;g.fillStyle='rgba(220,210,190,.55)';g.fillRect(x,y,m*.022,m*.03*(.5+hash(r*30+i)));}}
+  for(let r=0;r<9;r++){const y=h*(.12+r*.075);for(let i=0;i<24;i++){const x=w*(.08+i*.037);if(x<sweep)continue;g.fillStyle='rgba(220,210,190,.55)';g.fillRect(x,y,m*.02,m*.03);}}
   g.fillStyle='#000';g.fillRect(0,0,Math.max(0,sweep),h);glow(g,sweep,h/2,m*.5,'rgba(255,60,60,A)',.2);
-  const fa=Math.max(0,1-((t*.1)%1.2)*1.1);fhu(g,w*.78,h*.92,m*.2,'rgba(200,190,180,'+fa+')',0);
-  for(let i=0;i<30;i++){const k=((t*.2+hash(i))%1);g.fillStyle='rgba(210,200,190,'+((1-k)*.8)+')';g.fillRect(w*.78+(hash(i+1)-.5)*m*.2,h*.92-m*.3*hash(i+2)-k*m*.2,2,2);}},
- /* 7-A  particles of law, heavy oaths */
- (g,w,h,t)=>{fvg(g,w,h,'#1a0a2a','#05020a');const m=Math.min(w,h);fogBand(g,w,h,t,h*.5,'rgba(150,80,220,A)',.35);fogBand(g,w,h,t,h*.75,'rgba(120,60,200,A)',.3);
-  for(let i=0;i<70;i++){const x=w*hash(i),y=h*((hash(i+9)+t*.02*(.4+hash(i+4)))%1),s=m*(.006+hash(i+2)*.012);glow(g,x,y,s*5,'rgba(210,160,255,A)',.5);g.fillStyle='rgba(230,200,255,.8)';g.fillRect(x-s/2,y-s/2,s,s);}
-  for(let i=0;i<5;i++){const x=w*(.15+i*.18),sw=Math.sin(t*.8+i)*m*.01;g.strokeStyle='rgba(180,120,240,.4)';g.lineWidth=2;g.beginPath();g.moveTo(x,0);g.lineTo(x+sw,h*.55);g.stroke();g.fillStyle='rgba(60,30,100,.9)';g.fillRect(x+sw-m*.03,h*.55,m*.06,m*.05);}},
- /* 7-B  the morning vow, the hour of reckoning */
- (g,w,h,t)=>{fvg(g,w,h,'#14081f','#030106');const m=Math.min(w,h),cx=w/2,cy=h*.46;fhu(g,cx,h*.95,m*.22,'#030105',1);
-  frg(g,cx,cy,m*.3,'rgba(200,150,255,.5)',2);frg(g,cx,cy,m*.24,'rgba(200,150,255,.3)',1);
-  g.strokeStyle='rgba(230,200,255,.8)';g.lineWidth=3;g.beginPath();g.moveTo(cx,cy);g.lineTo(cx+Math.cos(t*.5-1.57)*m*.22,cy+Math.sin(t*.5-1.57)*m*.22);g.stroke();g.beginPath();g.moveTo(cx,cy);g.lineTo(cx+Math.cos(t*.04-1.57)*m*.14,cy+Math.sin(t*.04-1.57)*m*.14);g.stroke();
-  const s='刻限よ私を測れ私は戻らぬ';for(let i=0;i<s.length*2;i++){const a=i/(s.length*2)*6.28+t*.15;g.save();g.translate(cx+Math.cos(a)*m*.36,cy+Math.sin(a)*m*.36);g.rotate(a+1.57);ftx(g,s[i%s.length],0,0,m*.04,'rgba(220,190,255,.8)');g.restore();}
-  glow(g,cx,cy,m*.6,'rgba(160,90,255,A)',.15);},
- /* 8-A  the gate of the supreme sanctuary */
- (g,w,h,t)=>{fvg(g,w,h,'#240808','#050102');const m=Math.min(w,h),cx=w/2,dw=m*.34,dh=h*.7,dy=h*.1;
-  glow(g,cx,dy+dh*.6,m*.9,'rgba(255,60,40,A)',.25+.08*Math.sin(t*1.3));
-  g.fillStyle='#120304';g.beginPath();g.moveTo(cx-dw,h);g.lineTo(cx-dw,dy+dw);g.arc(cx,dy+dw,dw,Math.PI,0);g.lineTo(cx+dw,h);g.fill();
-  g.fillStyle='rgba(255,70,50,.55)';g.fillRect(cx-3,dy+dw*.2,6,dh);
-  for(const sd of [-1,1]){g.fillStyle='#1a0608';g.fillRect(cx+sd*m*.55-m*.04,0,m*.08,h);}
-  fhu(g,cx,h*.98,m*.1,'#000',0);rays(g,cx,dy+dh*.6,h,t,'rgba(255,90,60,A)',9,.1,.8);},
- /* 8-B  sealed mouths, and a watching eye */
+  const fa=Math.max(0,1-((t*.1)%1.2)*1.1);fhu(g,w*.78,h*.92,m*.2,'rgba(200,190,180,'+fa+')',0);},
+ /* vol.7 p2  the sanctuary is sealed; one eye keeps watch, and the ladder is held */
  (g,w,h,t)=>{fvg(g,w,h,'#0c0608','#020102');const m=Math.min(w,h);
-  for(let i=0;i<7;i++){const x=w*(.1+i*.13),y=h*.95;g.fillStyle='#040203';g.beginPath();g.ellipse(x,y-m*.32,m*.07,m*.09,0,0,7);g.fill();g.fillRect(x-m*.1,y-m*.24,m*.2,m*.4);g.strokeStyle='rgba(200,60,60,.8)';g.lineWidth=2;g.beginPath();g.moveTo(x-m*.035,y-m*.29);g.lineTo(x+m*.035,y-m*.29);g.stroke();}
-  const o=Math.min(1,t*.12);drawEye(g,w/2,h*.3,m*.28*o+1,o,t,'#c01020');glow(g,w/2,h*.3,m*.7,'rgba(200,20,40,A)',.15*o);},
+  for(let i=0;i<7;i++){const x=w*(.1+i*.13);g.fillStyle='#120608';g.fillRect(x-m*.02,h*.6,m*.04,h*.4);}
+  const o=Math.min(1,t*.12);drawEye(g,w/2,h*.4,m*.2*o+1,o,t,'#c01020');glow(g,w/2,h*.4,m*.7,'rgba(200,20,40,A)',.15*o);},
 ];
 const CH_S=[
  /* 1-A  the world branches */
@@ -2268,6 +2257,7 @@ actBtn.addEventListener('click',e=>{e.stopPropagation();readBook();});
 actBtn.addEventListener('touchstart',e=>{e.stopPropagation();e.preventDefault();readBook();},{passive:false});
 function placeBook(R,w,h,len,endZ){
   bookObj=null;bookNear=false;if(bookRun[fi])return;
+  if(fi===7&&!(SHARA()?store.get('shara'):anyCleared()))return;
   const bad=[];
   for(const hz of F.hz||[]){
     const zs=[hz.z,hz.z0,hz.z1].filter(Number.isFinite);if(!zs.length)continue;
