@@ -1090,9 +1090,9 @@ const sharaOpen=()=>!!(store.get('happy')&&store.get('namuru')&&store.get('hard'
 function buildDiff(){
   if(SET.diff==='shara'&&!sharaOpen())SET.diff='hard';
   const go=d=>()=>{SET.diff=d;saveSet();subMenu(false);startMovie();};
-  const base='イージー：怪異の動きが緩やか（初めての方向け）\nノーマル：標準の難易度\nハード：怪異が苛烈になり、エンディングが変化します\n　（引き返す道が封じられ、最深部でナムルとの戦いが待っています）\nシャラバイ：ハードのさらに上。ボス戦は最高難度で、結末も変わります';
+  const base='イージー：怪異の動きが緩やか（初めての方向け）\nノーマル：標準の難易度\nハード：怪異が苛烈になり、エンディングが変化します\n　（引き返す道が封じられ、最深部でナムルとの戦いが待っています）'+(sharaOpen()?'\nシャラバイ：ハードのさらに上。ボス戦は最高難度で、結末も変わります':'');
   menuItems=[{t:'イージー',f:go('easy'),desc:base},{t:'ノーマル',f:go('normal'),desc:base},{t:'ハード',k:'hard',f:go('hard'),desc:base},
-    sharaOpen()?{t:'シャラバイ',k:'shara',f:go('shara'),desc:base}:{t:'？？？？？',f:()=>{uiSel();},desc:base.replace('\nシャラバイ：ハードのさらに上。ボス戦は最高難度で、結末も変わります','')+'\n\n【鍵がかかっている】すべての結末を見届けた者にだけ、この道は開かれる。'},
+    sharaOpen()?{t:'シャラバイ',k:'shara',f:go('shara'),desc:base}:{t:'？？？？？',f:()=>{uiSel();},desc:base+'\n\n【鍵がかかっている】すべての結末を見届けた者にだけ、この道は開かれる。'},
     {t:'戻る',f:closeDiff,desc:base}];
   $('ach').textContent=base;
   renderMenu();
