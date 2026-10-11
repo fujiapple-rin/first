@@ -2511,8 +2511,8 @@ function buildOmakeRoot(){
   const cnt=k=>BK(k).filter((b,i)=>store.get(BKEY(k,i))).length;
   menuItems=[
     {t:'深層ナムル教の書　（'+cnt('n')+' / 8）',desc:'各階層に一冊ずつ置かれた、教団の書。全八章がそろうと、物語が完成する。',f:()=>openOmakeList('n')},
-    (sharaOpen()?{t:'シャラバイの書　（'+cnt('s')+' / 8）',k:'shara',desc:'シャラバイで見つかる、もうひとつの書。多元の聖堂の物語。',f:()=>openOmakeList('s')}:{t:'？？？？',desc:'鍵がかかっている。',f:()=>{}}),
     (store.get('exh')?{t:'エキストラ',k:'extraH',desc:'ナムルを討った者の、その後。',f:()=>runMovie(EXTRA_H,EXH_OPT(()=>{showTitle();openOmake();}))}:{t:'？？？？',desc:'ハードで、ナムルを倒すと手に入る。',f:()=>{}}),
+    (sharaOpen()?{t:'シャラバイの書　（'+cnt('s')+' / 8）',k:'shara',desc:'シャラバイで見つかる、もうひとつの書。多元の聖堂の物語。',f:()=>openOmakeList('s')}:{t:'？？？？',desc:'鍵がかかっている。',f:()=>{}}),
     {t:'戻る',f:closeOmake,desc:''}];
   if(cnt('n')===8&&cnt('s')===8)menuItems.splice(3,0,{t:'エキストラ　——　真実',k:'extra',desc:'すべての書を読み終えた者にだけ、開かれる。',f:()=>runMovie(EXTRA,{dread:.3,card:'',cardMs:900,sfx:()=>{if(ac)bell(73.4);},onDone:()=>{showTitle();openOmake();}})});
   $('ach').textContent='おまけ　——　主人公が教え込まれてきた「物語」。';
