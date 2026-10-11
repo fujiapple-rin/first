@@ -894,7 +894,7 @@ function visitorTitleBG(g,w,h,t){
   /* the player's own screen lights this side of the room */
   glow(g,w*.08,h*.85,h*.7,'rgba(150,190,255,A)',.09);
   /* the hero speaks, now and then */
-  const L=['聞こえるか。','ここにいる。','——お前の、すぐそばに。','画面の傷は、私がつけた。','題名は、私が書き換えた。','——ここは、私の聖堂だ。'],k=Math.floor(t/5)%L.length,ph=(t%5)/5,al=Math.max(0,Math.min(1,Math.sin(ph*Math.PI)*1.6));
+  const L=['聞こえるか。','ここにいる。','——お前の、すぐそばに。','……ずっと、そばにいる。'],k=Math.floor(t/5)%L.length,ph=(t%5)/5,al=Math.max(0,Math.min(1,Math.sin(ph*Math.PI)*1.6));
   ftx(g,L[k],w*.3,h*.6,m*.045,'rgba(255,236,190,'+(al*.8).toFixed(2)+')');
   /* a horizontal tear of the picture, once in a while */
   const gl=(t*.7)%7;if(gl<.12){const ty=h*hash(Math.floor(t*.7)),th=h*.04;g.drawImage(g.canvas,0,ty,w,th,(hash(Math.floor(t*.7)+1)-.5)*w*.05,ty,w,th);}
