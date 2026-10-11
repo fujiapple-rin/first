@@ -336,7 +336,9 @@ const TFONT='"Yuji Boku","Shippori Mincho","Yu Mincho",serif';
 const store={get(k){try{return localStorage.getItem('tj_'+k);}catch(e){return null;}},set(k,v){try{localStorage.setItem('tj_'+k,v);}catch(e){}saveQueue();}};
 /* account save: the local store is mirrored to this viewer's own db document, so progress follows them to other devices */
 const SAVE={doc:null,timer:0,busy:false,again:false};
-function saveSnapshot(){const o={};try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('tj_'))o[k]=localStorage.getItem(k);}}catch(e){}return o;}
+/* only progress is mirrored (endings and volumes); device settings such as graphics and volume stay per device */
+const saveKeyOk=k=>/^tj_(happy|namuru|hard|shara|bk\d+|sk\d+)$/.test(k);
+function saveSnapshot(){const o={};try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&saveKeyOk(k))o[k]=localStorage.getItem(k);}}catch(e){}return o;}
 function saveCanon(o){return JSON.stringify(Object.keys(o).sort().map(k=>[k,o[k]]));}
 function saveQueue(){if(!SAVE.doc)return;clearTimeout(SAVE.timer);SAVE.timer=setTimeout(saveFlush,1500);}
 async function saveFlush(){if(!SAVE.doc)return;if(SAVE.busy){SAVE.again=true;return;}SAVE.busy=true;try{await SAVE.doc.set({data:saveSnapshot()});}catch(e){}SAVE.busy=false;if(SAVE.again){SAVE.again=false;saveQueue();}}
@@ -347,13 +349,14 @@ async function saveSync(){
     const uid=await user.id();if(!uid)return;
     SAVE.doc=db.doc('data/users/'+uid+'/save');
     const snap=await SAVE.doc.get();
-    const remote=snap.exists?(snap.data()||{}).data:null;
-    if(!remote||typeof remote!=='object'){await SAVE.doc.set({data:saveSnapshot()});return;}
+    const remote=snap.exists&&snap.data()&&typeof snap.data().data==='object'?snap.data().data:{};
     const local=saveSnapshot();
-    if(saveCanon(remote)===saveCanon(local))return;
-    /* the account copy is newer: adopt it, then reload once so the game reads it from the start */
-    for(const k of Object.keys(local))localStorage.removeItem(k);
-    for(const k of Object.keys(remote))localStorage.setItem(k,remote[k]);
+    /* unlocks only ever grow, so the union of both sides is the safe merge */
+    const merged={};for(const k of Object.keys(remote))if(saveKeyOk(k))merged[k]=remote[k];Object.assign(merged,local);
+    if(saveCanon(merged)!==saveCanon(remote))await SAVE.doc.set({data:merged});
+    const gain=Object.keys(merged).filter(k=>local[k]===undefined);
+    if(!gain.length)return;
+    for(const k of gain)localStorage.setItem(k,merged[k]);
     let done=false;try{done=sessionStorage.getItem('tj_synced')==='1';sessionStorage.setItem('tj_synced','1');}catch(e){}
     if(!done)location.reload();
   }catch(e){}
@@ -3010,7 +3013,7 @@ function bossUpdate(dt){
       if(Math.hypot(dx,dy,dz)<m.s0+.5){bossG.remove(s);B.thr.splice(i,1);hitMinion(m);gone=true;break;}
     }
     if(gone)continue;
-    if(Math.abs(s.position.z-B.nz)<2.4&&s.position.y>4.4&&s.position.y<8){
+    if(Math.abs(s.position.z-B.nz)<2.4&&Math.abs(s.position.x)<2.4&&s.position.y>4.4&&s.position.y<8.4){
       bossG.remove(s);B.thr.splice(i,1);
       if(bossVuln){bossVuln=false;B.volT=6;bossHit();if(state!=='boss'||B.swordPhase)return;}
       else{if(ac)noiseBurst({dur:.4,f0:2000,f1:200,vol:.25,type:'lowpass',send:.4});say('神器は弾かれた……顔が割れた瞬間を狙え。',2600);}
