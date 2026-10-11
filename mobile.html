@@ -972,7 +972,7 @@ function show3D(on){cv.style.display=on?'block':'none';f3d=on;}
 function showBG(on){bg.style.display=on?'block':'none';if(on)bg.style.opacity=1;bgOn=on;}
 function fadeTo(o,ms=500,bgc='#000'){fade.style.transition=`opacity ${ms}ms`;fade.style.background=bgc;fade.style.opacity=o;}
 function fadeCard(no,big,sub,col='#d33'){fadeNo.textContent=no||'';fadeBig.textContent=big||'';fadeBig.style.color=col;fadeSub.textContent=sub||'';}
-function say(t,ms=3600){msgEl.textContent=t;msgEl.classList.add('show');clearTimeout(msgTimer);msgTimer=setTimeout(()=>msgEl.classList.remove('show'),ms);}
+function say(t,ms=3600){if(state==='movie')return;msgEl.textContent=t;msgEl.classList.add('show');clearTimeout(msgTimer);msgTimer=setTimeout(()=>msgEl.classList.remove('show'),ms);}
 function hideScreens(){['menu','movie','narr','credits','fin'].forEach(id=>$(id).classList.remove('show'));manualEl.classList.remove('show');manualOpen=false;skipBtn.style.display='none';}
 
 /* title text with crawling letters */
@@ -1179,6 +1179,7 @@ const mText=$('mText');
 function runMovie(script,opt){
   initAudio();if(ac)ac.resume();
   seq++;hideScreens();state='movie';show3D(false);showBG(true);curMovie=script;movieOpt=opt;bgScene=script[0].sc;bgT=0;
+  clearTimeout(msgTimer);msgEl.classList.remove('show');clearTimeout(hudTimer);hud.style.opacity=0;floorLabel.style.opacity=0;   /* the book's text comes first: no hero lines over it */
   mText.className='';if(opt.cls)mText.classList.add(opt.cls);mText.innerHTML='';$('movie').classList.add('show');skipBtn.style.display='block';
   mv={i:0,l:-1,timer:0,busy:false};setDread(opt.dread||.35);musPlay(opt.music||'movie');
   fadeTo(1,0);setTimeout(()=>fadeTo(0,1200),30);
@@ -3161,7 +3162,8 @@ function bossUpdate(dt){
       if(Math.hypot(dx,dy,dz)<m.s0+.5){bossG.remove(s);B.thr.splice(i,1);hitMinion(m);gone=true;break;}
     }
     if(gone)continue;
-    if(Math.abs(s.position.z-B.nz)<2.4&&Math.abs(s.position.x)<2.4&&s.position.y>4.4&&s.position.y<8.4){
+    /* anywhere on Namu's body counts, so a throw at him lands whether you look up at the face or straight ahead; damage still needs the face to be open */
+    if(Math.abs(s.position.z-B.nz)<2.4&&Math.abs(s.position.x)<2.8&&s.position.y>.1&&s.position.y<8.6){
       bossG.remove(s);B.thr.splice(i,1);
       if(bossVuln){bossVuln=false;B.volT=6;bossHit();if(state!=='boss'||B.swordPhase)return;}
       else{if(ac)noiseBurst({dur:.4,f0:2000,f1:200,vol:.25,type:'lowpass',send:.4});say('神器は弾かれた……顔が割れた瞬間を狙え。',2600);}
