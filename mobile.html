@@ -85,9 +85,11 @@
   #mText.out{opacity:0}
   #mText p{margin:0;opacity:0;animation:lin 1.4s forwards}
   #mText p.em{color:#c4141e;font-size:1.2em;letter-spacing:.22em;animation:bkIn 1.6s ease-out forwards,emPulse 1.8s ease-in-out infinite alternate}
-  #mText p.gold{font-size:1.12em;letter-spacing:.16em;color:transparent;background:linear-gradient(100deg,#b8893a 0%,#f3e2b0 40%,#fffbe8 50%,#f3e2b0 60%,#b8893a 100%);background-size:260% 100%;-webkit-background-clip:text;background-clip:text;animation:bkInG 1.6s ease-out forwards,lightSweep 4.6s linear infinite;filter:drop-shadow(0 0 10px rgba(255,226,160,.4))}
+  #mText p.gold{position:relative;font-size:1.12em;letter-spacing:.16em;color:#f8ebc8;-webkit-text-stroke:3px rgba(36,22,4,.85);paint-order:stroke fill;text-shadow:0 0 14px rgba(255,238,190,.6),0 0 38px rgba(255,205,120,.4);animation:bkInG 1.6s ease-out forwards,goldBreath 3.4s ease-in-out infinite alternate}
+  #mText p.gold::before{content:'';position:absolute;left:-10%;right:-10%;top:-70%;bottom:-70%;z-index:-1;pointer-events:none;background:radial-gradient(ellipse 50% 50% at 50% 50%,rgba(255,240,196,.3),rgba(255,214,130,.12) 55%,rgba(255,200,110,0) 100%);animation:beamBreath 3.4s ease-in-out infinite alternate}
   @keyframes bkInG{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
-  @keyframes lightSweep{from{background-position:120% 0}to{background-position:-20% 0}}
+  @keyframes goldBreath{from{text-shadow:0 0 10px rgba(255,238,190,.45),0 0 30px rgba(255,205,120,.3)}to{text-shadow:0 0 18px rgba(255,246,214,.8),0 0 46px rgba(255,205,120,.55)}}
+  @keyframes beamBreath{from{opacity:.55}to{opacity:1}}
   @keyframes bkIn{from{opacity:0;transform:translateY(16px);filter:blur(5px)}to{opacity:1;transform:none;filter:none}}
   @keyframes emPulse{from{text-shadow:0 0 10px rgba(170,0,12,.6),0 0 4px #000}to{text-shadow:0 0 26px rgba(220,30,30,.95),0 0 6px #000}}
   @keyframes lin{to{opacity:1}}
