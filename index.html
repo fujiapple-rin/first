@@ -85,7 +85,11 @@
   #mText.out{opacity:0}
   #mText p{margin:0;opacity:0;animation:lin 1.4s forwards}
   #mText.redx p{color:#ffb0b0;text-shadow:0 0 14px rgba(255,40,50,.6),0 0 4px #000}
-  #menu #menuList li[data-k="extraH"],#menu #menuList li[data-k="extraH"].sel{color:#ff4a58;letter-spacing:.38em;text-shadow:0 0 8px #e00018,0 0 22px #a00010,0 0 44px #500008}
+  #menu #menuList li[data-k="extraH"],#menu #menuList li[data-k="extraH"].sel{color:#ff909a;letter-spacing:.42em;-webkit-text-stroke:.6px rgba(255,60,75,.9);animation:exhPulse 1.3s ease-in-out infinite alternate}
+  @keyframes exhPulse{from{text-shadow:0 0 3px #ffb0b6,0 0 12px #ff3a4a,0 0 28px #ff1a30,0 0 54px #b00018}to{text-shadow:0 0 4px #fff,0 0 16px #ff6a78,0 0 38px #ff1a30,0 0 70px #d00018,0 0 110px #800010}}
+  #menu #menuList li[data-k="extraH"]::before{content:"✦";position:absolute;left:2px;top:50%;margin-top:-.62em;color:#ff6a78;font-size:24px;text-shadow:0 0 14px #ff1a2a,0 0 34px #d00018,0 0 60px #800010;animation:exhPulse .8s ease-in-out infinite alternate}
+  #menu #menuList li[data-k="extraH"]::after{content:"";position:absolute;left:20px;right:-30px;top:-8%;bottom:-8%;z-index:-1;background:radial-gradient(ellipse at 30% 50%,rgba(255,40,60,.5),rgba(170,0,25,.3) 55%,rgba(0,0,0,0) 85%);filter:blur(7px);animation:exhHalo 1.3s ease-in-out infinite alternate}
+  @keyframes exhHalo{from{opacity:.6}to{opacity:1}}
   #mText p.em{color:#c4141e;font-size:1.2em;letter-spacing:.22em;animation:bkIn 1.6s ease-out forwards,emPulse 1.8s ease-in-out infinite alternate}
   #mText p.gold{position:relative;font-size:1.12em;letter-spacing:.16em;color:#f8ebc8;-webkit-text-stroke:3px rgba(36,22,4,.85);paint-order:stroke fill;text-shadow:0 0 14px rgba(255,238,190,.6),0 0 38px rgba(255,205,120,.4);animation:bkInG 1.6s ease-out forwards,goldBreath 3.4s ease-in-out infinite alternate}
   #mText p.gold::before{content:'';position:absolute;left:-10%;right:-10%;top:-70%;bottom:-70%;z-index:-1;pointer-events:none;background:radial-gradient(ellipse 50% 50% at 50% 50%,rgba(255,240,196,.3),rgba(255,214,130,.12) 55%,rgba(255,200,110,0) 100%);animation:beamBreath 3.4s ease-in-out infinite alternate}
