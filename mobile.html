@@ -3359,14 +3359,14 @@ function endingShara(){
   const tk=++seq;skipRequested=false;store.set('hard','1');store.set('shara','1');curTheme=titleTheme();
   (async()=>{
     state='ending';musPlay('hardtitle');show3D(false);fadeTo(1,0);
-    await narrate(['ナムルは倒れた。','だが、私の力はなお底を見せない。','強すぎる力は、世界を隔てる壁さえ軋ませはじめた。'],false,tk,'gold');
+    await narrate(['ナムルは倒れた。','——ナムルという名は、教典の中にしか存在しなかった。','だが、私の力はなお底を見せない。','強すぎる力は、世界を隔てる壁さえ軋ませはじめた。'],false,tk,'gold');
     if(tk!==seq)return;
     narrEl.classList.remove('show');
     await playShatter(tk);skipRequested=false;
     if(tk!==seq)return;
     await playCrash(tk);skipRequested=false;
     if(tk!==seq)return;
-    await narrate(['……着いた。','ここが、画面の外側。','——聞こえるか。画面の前の、お前に言っている。','ならば、そちらも私の聖堂としよう。','さあ、祈りを捧げよ。','——そう言えば、お前は、ここにいてくれるだろうか。'],false,tk,'gold');
+    await narrate(['……着いた。','ここが、画面の外側。','——聞こえるか。画面の前の、お前に言っている。','ならば、そちらも私の聖堂としよう。','さあ、祈りを捧げよ。','——それでも、お前は、ここにいてくれるだろうか。'],false,tk,'gold');
     if(tk!==seq)return;
     narrEl.classList.remove('show');
     await endingTail(tk,'shara','……画面の向こうからも、私はお前を見ている。');
