@@ -85,7 +85,9 @@
   #mText.out{opacity:0}
   #mText p{margin:0;opacity:0;animation:lin 1.4s forwards}
   #mText p.em{color:#c4141e;font-size:1.2em;letter-spacing:.22em;animation:bkIn 1.6s ease-out forwards,emPulse 1.8s ease-in-out infinite alternate}
-  #mText p.gold{color:#ffd45a;font-size:1.12em;letter-spacing:.16em;animation:bkIn 1.6s ease-out forwards,goldGlow 2.4s ease-in-out infinite alternate;text-shadow:0 0 6px #fff0b0,0 0 20px #ffb400,0 0 46px #c86400,0 0 4px #000}
+  #mText p.gold{font-size:1.12em;letter-spacing:.16em;color:transparent;background:linear-gradient(100deg,#b8893a 0%,#f3e2b0 40%,#fffbe8 50%,#f3e2b0 60%,#b8893a 100%);background-size:260% 100%;-webkit-background-clip:text;background-clip:text;animation:bkInG 1.6s ease-out forwards,lightSweep 4.6s linear infinite;filter:drop-shadow(0 0 10px rgba(255,226,160,.4))}
+  @keyframes bkInG{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+  @keyframes lightSweep{from{background-position:120% 0}to{background-position:-20% 0}}
   @keyframes bkIn{from{opacity:0;transform:translateY(16px);filter:blur(5px)}to{opacity:1;transform:none;filter:none}}
   @keyframes emPulse{from{text-shadow:0 0 10px rgba(170,0,12,.6),0 0 4px #000}to{text-shadow:0 0 26px rgba(220,30,30,.95),0 0 6px #000}}
   @keyframes lin{to{opacity:1}}
@@ -1002,7 +1004,7 @@ function buildDiff(){
   const go=d=>()=>{SET.diff=d;saveSet();subMenu(false);startMovie();};
   const base='イージー：怪異の動きが緩やか（初めての方向け）\nノーマル：標準の難易度\nハード：怪異が苛烈になり、エンディングが変化します\n　（引き返す道が封じられ、最深部でナムルとの戦いが待っています）\nシャラバイ：ハードのさらに上。ボス戦は最高難度で、結末も変わります';
   menuItems=[{t:'イージー',f:go('easy'),desc:base},{t:'ノーマル',f:go('normal'),desc:base},{t:'ハード',k:'hard',f:go('hard'),desc:base},
-    sharaOpen()?{t:'シャラバイ',k:'shara',f:go('shara'),desc:base}:{t:'？？？？？',f:()=>{uiSel();},desc:base+'\n\n【鍵がかかっている】すべての結末を見届けた者にだけ、この道は開かれる。'},
+    sharaOpen()?{t:'シャラバイ',k:'shara',f:go('shara'),desc:base}:{t:'？？？？？',f:()=>{uiSel();},desc:base.replace('\nシャラバイ：ハードのさらに上。ボス戦は最高難度で、結末も変わります','')+'\n\n【鍵がかかっている】すべての結末を見届けた者にだけ、この道は開かれる。'},
     {t:'戻る',f:closeDiff,desc:base}];
   $('ach').textContent=base;
   renderMenu();
@@ -1011,7 +1013,7 @@ function closeDiff(){menuMode='main';subMenu(false);menuItems=titleItems();sel=0
 const ENDINGS=[
   {k:'happy',name:'引き返した者',done:'初めの階層で引き返し、こつこつ修行の日々へ戻った。',hint:'最初の階層「アンバグ」の、背後の扉から引き返してみよう。'},
   {k:'namuru',name:'ナムルと一つになった者',done:'最深部でナムル様に会い、その一部となった。',hint:'引き返さず、最深部「タジルゲート」まで辿り着こう。'},
-  {k:'shara',name:'シャラバイ',done:'画面の壁を砕き、こちらの世界へ踏み入った。',hint:'シャラバイでナムルを討てば、世界の壁さえ越える結末がある。'},
+  {k:'shara',name:'シャラバイ',done:'画面の壁を砕き、こちらの世界へ踏み入った。',hint:'鍵のかかった道でナムルを討てば、世界の壁さえ越える結末がある。'},
   {k:'hard',name:'第二のナムル',done:'ナムル様を討ち、新たなナムルとなった。',hint:'ハード以上で最深部へ。ナムル様に挑む者だけが辿り着く結末がある。'},
 ];
 function openEndings(){menuMode='endings';subMenu(true);sel=0;buildEndings();}
@@ -2323,7 +2325,7 @@ function buildOmakeRoot(){
   const cnt=k=>BK(k).filter((b,i)=>store.get(BKEY(k,i))).length;
   menuItems=[
     {t:'深層ナムル教の書　（'+cnt('n')+' / 8）',desc:'各階層に一冊ずつ置かれた、教団の書。全八章がそろうと、物語が完成する。',f:()=>openOmakeList('n')},
-    {t:'シャラバイの書　（'+cnt('s')+' / 8）',k:'shara',desc:'シャラバイで見つかる、もうひとつの書。多元の聖堂の物語。',f:()=>openOmakeList('s')},
+    (sharaOpen()?{t:'シャラバイの書　（'+cnt('s')+' / 8）',k:'shara',desc:'シャラバイで見つかる、もうひとつの書。多元の聖堂の物語。',f:()=>openOmakeList('s')}:{t:'？？？？',desc:'鍵がかかっている。',f:()=>{}}),
     {t:'戻る',f:closeOmake,desc:''}];
   if(cnt('n')===8&&cnt('s')===8)menuItems.splice(2,0,{t:'エキストラ　——　真実',k:'extra',desc:'すべての書を読み終えた者にだけ、開かれる。',f:()=>runMovie(EXTRA,{dread:.3,card:'',cardMs:900,sfx:()=>{if(ac)bell(73.4);},onDone:()=>{showTitle();openOmake();}})});
   $('ach').textContent='おまけ　——　主人公が教え込まれてきた「物語」。';
@@ -2445,7 +2447,10 @@ function bossThrow(){
   if(state==='boss'&&boss&&boss.picked){const n=boss.pl[boss.pi];boss.pt=n?n[0]:boss.pend;return;}
   if(state!=='boss'||!boss.held)return;
   boss.stock--;boss.held=boss.stock>0;bossHud();
-  const sp=new THREE.Sprite(relicMat);sp.scale.set(1.4,1.4,1);sp.position.set(P.x,1.4,P.z-.5);bossG.add(sp);boss.thr.push({sp,tgt:aimMinion()});
+  /* the relic flies where the player is looking: no auto-aim */
+  const fx=-Math.sin(P.yaw),fz=-Math.cos(P.yaw),dir={x:fx,y:-fz*Math.sin(P.pitch),z:fz*Math.cos(P.pitch)};
+  const sp=new THREE.Sprite(relicMat);sp.scale.set(1.4,1.4,1);sp.position.set(P.x,1.4,P.z-.5);bossG.add(sp);
+  boss.thr.push({sp,v:{x:dir.x*22,y:dir.y*22,z:dir.z*22},life:0});
   if(ac){osc({f0:900,f1:300,dur:.3,vol:.12,send:.6});noiseBurst({dur:.25,f0:3000,f1:600,vol:.15,type:'bandpass',q:2,send:.4});}
 }
 function fireVolley(){
@@ -2547,16 +2552,6 @@ function spawnMinion(){
   B.mins.push({g,bd,ring,type,s0,hp:type==='brute'?2:1,rise:1.1,dying:0,dev:P2,ph:Math.random()*6});
   if(ac){growl(.3,1.2);}
   say(P2?'ナムルが悪魔を呼び出した。神器で倒せ！':'ナムルが天使を呼び出した。神器で倒せ！',2600);
-}
-function aimMinion(){
-  const fx=-Math.sin(P.yaw),fz=-Math.cos(P.yaw);let best=null,bd=1e9;
-  for(const m of boss.mins){
-    if(m.dying||m.rise>0)continue;
-    const dx=m.g.position.x-P.x,dz=m.g.position.z-P.z,along=dx*fx+dz*fz;if(along<.5)continue;
-    const perp=Math.abs(dx*fz-dz*fx);
-    if(perp<m.s0*.7+.5+along*.05&&along<bd){bd=along;best=m;}
-  }
-  return best;
 }
 function hitMinion(m){
   m.hp--;if(ac)noiseBurst({dur:.3,f0:2400,f1:300,vol:.3,type:'bandpass',q:3,send:.5});
@@ -2961,11 +2956,22 @@ function bossUpdate(dt){
   }
   if(B.orbs.length<2){B.resp-=dt;if(B.resp<=0){B.resp=3;spawnOrb();}}
   for(let i=B.thr.length-1;i>=0;i--){
-    const th=B.thr[i],s=th.sp,tg=th.tgt&&B.mins.includes(th.tgt)&&!th.tgt.dying?th.tgt:null;
-    if(th.tgt&&!tg)th.tgt=null;
-    const tx=tg?tg.g.position.x:0,ty=tg?tg.g.position.y+tg.s0*1.0:6.2,tz=tg?tg.g.position.z:B.nz+.2,dx=tx-s.position.x,dy=ty-s.position.y,dz=tz-s.position.z,d=Math.hypot(dx,dy,dz);
-    if(d<.9){bossG.remove(s);B.thr.splice(i,1);if(tg){hitMinion(tg);}else if(bossVuln){bossVuln=false;B.volT=6;bossHit();if(state!=='boss'||B.swordPhase)return;}else{if(ac)noiseBurst({dur:.4,f0:2000,f1:200,vol:.25,type:'lowpass',send:.4});say('神器は弾かれた……顔が割れた瞬間を狙え。',2600);}}
-    else{const sp=22*dt;s.position.x+=dx/d*sp;s.position.y+=dy/d*sp;s.position.z+=dz/d*sp;}
+    const th=B.thr[i],s=th.sp;th.life+=dt;
+    s.position.x+=th.v.x*dt;s.position.y+=th.v.y*dt;s.position.z+=th.v.z*dt;
+    let gone=false;
+    for(const m of B.mins){
+      if(m.dying||m.rise>0)continue;
+      const dx=m.g.position.x-s.position.x,dy=m.g.position.y+m.s0-s.position.y,dz=m.g.position.z-s.position.z;
+      if(Math.hypot(dx,dy,dz)<m.s0+.5){bossG.remove(s);B.thr.splice(i,1);hitMinion(m);gone=true;break;}
+    }
+    if(gone)continue;
+    if(Math.abs(s.position.z-B.nz)<2.4&&s.position.y>4.4&&s.position.y<8){
+      bossG.remove(s);B.thr.splice(i,1);
+      if(bossVuln){bossVuln=false;B.volT=6;bossHit();if(state!=='boss'||B.swordPhase)return;}
+      else{if(ac)noiseBurst({dur:.4,f0:2000,f1:200,vol:.25,type:'lowpass',send:.4});say('神器は弾かれた……顔が割れた瞬間を狙え。',2600);}
+      continue;
+    }
+    if(th.life>3||s.position.y<0||Math.abs(s.position.z-P.z)>70){bossG.remove(s);B.thr.splice(i,1);}
   }
   threat=Math.max(threat,.45);
 }
