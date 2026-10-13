@@ -2652,7 +2652,7 @@ function clearAttacks(){
 function bossReset(first,keepP2){
   const nz=namu.z,p2=keepP2&&boss&&boss.phase===2;
   if(boss)clearAttacksSafe();else while(bossG.children.length)bossG.remove(bossG.children[0]);
-  boss={hp:6,max:6,maxP:SHARA()?6:7,php:SHARA()?6:7,phase:p2?2:1,inv:0,t:0,volT:3.5,vulnT:0,volleyT:2.2,spikeT:4,homT:5,curtT:6,held:false,stock:0,orbs:[],proj:[],spikes:[],thr:[],curt:[],hands:[],mins:[],mets:[],sweeps:[],pils:[],ult:null,rage:false,spT:5,handT:p2?5:8,minT:p2?12:20,resp:0,nz};
+  boss={hp:6,max:6,maxP:5,php:5,phase:p2?2:1,inv:0,t:0,volT:3.5,vulnT:0,volleyT:2.2,spikeT:4,homT:5,curtT:6,held:false,stock:0,orbs:[],proj:[],spikes:[],thr:[],curt:[],hands:[],mins:[],mets:[],sweeps:[],pils:[],ult:null,rage:false,spT:5,handT:p2?5:8,minT:p2?12:20,resp:0,nz};
   bossVuln=false;
   if(p2){namu.setRage(false);scene.fog.color.setHex(0x040001);scene.fog.density=.05;if(ac)musPlay('boss2');}
   for(let i=0;i<2;i++)spawnOrb();
