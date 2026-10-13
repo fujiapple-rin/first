@@ -710,7 +710,7 @@ function ambientEvent(){
   else{for(let k=0;k<4;k++)setTimeout(()=>stepSound(false),k*520);}
 }
 function stepSound(run){
-  if(F&&F.style!==3&&F.style!==4){stepFlip=!stepFlip;smp('step'+(stepFlip?'L':'R')+(1+Math.floor(Math.random()*3)),{vol:(run?.75:.6)*(.85+Math.random()*.3),rate:.9+Math.random()*.2,send:.12+(F.w/70)});}
+  if(F&&F.style!==3&&F.style!==4){stepFlip=!stepFlip;smp('step'+(stepFlip?'L':'R')+(1+Math.floor(Math.random()*3)),{vol:(run?.26:.2)*(.85+Math.random()*.3),rate:.9+Math.random()*.2,send:.08+(F.w/90)});}
   const st=F?F.style:0,v=(run?1.3:1)*(.85+Math.random()*.3),r=.9+Math.random()*.2,send=.1+(F?F.w/60:0);
   switch(st){
     case 0:noiseBurst({dur:.08,f0:520*r,f1:140,vol:.32*v,type:'lowpass',send});osc({f0:110*r,f1:70,dur:.08,vol:.15*v});break;
