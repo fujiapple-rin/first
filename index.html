@@ -3160,7 +3160,7 @@ function bossUpdate(dt){
   if(updateHands(dt)||updateMinions(dt)||updateMore(dt))return;
   for(let i=B.proj.length-1;i>=0;i--){
     const p=B.proj[i],s=p.sp;
-    if(p.hom){const dx=P.x-s.position.x,dy=1.3-s.position.y,dz=P.z-s.position.z,d=Math.hypot(dx,dy,dz)||1,sp=3.5;
+    if(p.hom&&(p.ht=(p.ht||0)+dt)<1.5){/* homing only for the first 1.5 s, then it flies straight */const dx=P.x-s.position.x,dy=1.3-s.position.y,dz=P.z-s.position.z,d=Math.hypot(dx,dy,dz)||1,sp=3.5;
       p.vx+=(dx/d*sp-p.vx)*1.7*dt;p.vy+=(dy/d*sp-p.vy)*1.7*dt;p.vz+=(dz/d*sp-p.vz)*1.7*dt;}
     s.position.x+=p.vx*dt;s.position.y+=p.vy*dt;s.position.z+=p.vz*dt;p.life-=dt;
     if(Math.hypot(s.position.x-P.x,s.position.z-P.z)<.8&&Math.abs(s.position.y-1.3)<1.2){bossG.remove(s);B.proj.splice(i,1);bossHurt();if(state!=='boss')return;}
