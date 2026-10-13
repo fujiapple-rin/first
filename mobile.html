@@ -22,6 +22,8 @@
   canvas{display:block}
   #cv{position:fixed;inset:0;width:100%;height:100%;display:none;image-rendering:pixelated;image-rendering:crisp-edges}
   #bg2d{position:fixed;inset:0;width:100%;height:100%;display:none;z-index:1;transition:opacity .9s}
+  #crt{position:fixed;inset:0;pointer-events:none;z-index:2;display:none;background:repeating-linear-gradient(to bottom,rgba(0,0,0,.24) 0,rgba(0,0,0,.24) calc(var(--row,3px)*.4),rgba(0,0,0,0) calc(var(--row,3px)*.4),rgba(0,0,0,0) var(--row,3px)),radial-gradient(ellipse at 50% 50%,rgba(0,0,0,0) 56%,rgba(0,0,0,.4) 100%);animation:crtf 6s steps(1) infinite}
+  @keyframes crtf{0%,100%{opacity:1}46%{opacity:.92}48%{opacity:1}}
   #vig{position:fixed;inset:0;pointer-events:none;z-index:2;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 40%,rgba(0,0,0,.65) 100%)}
   #grain{position:fixed;inset:-50%;pointer-events:none;z-index:2;opacity:.07;mix-blend-mode:overlay;
     background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
@@ -266,7 +268,7 @@
 <svg width="0" height="0" style="position:absolute"><filter id="rough"><feTurbulence type="fractalNoise" baseFrequency=".03" numOctaves="2" seed="4" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="5"/></filter></svg>
 <canvas id="cv"></canvas>
 <canvas id="bg2d"></canvas>
-<div id="vig"></div><div id="grain"></div>
+<div id="vig"></div><div id="grain"></div><div id="crt"></div>
 <div id="cross"></div>
 <div id="hud"></div>
 <div id="floorLabel"></div>
@@ -374,7 +376,7 @@ async function saveSync(){
 }
 saveSync();
 const DEF_DIFF='easy',DEF_GFX='high';
-const SET={diff:store.get('diff')||DEF_DIFF,vol:parseFloat(store.get('vol')||'.9'),sens:parseFloat(store.get('sens')||'1'),bright:parseFloat(store.get('bright')||'1'),music:parseFloat(store.get('music')||'.8'),gfx:store.get('gfx2')||DEF_GFX};
+const SET={diff:store.get('diff')||DEF_DIFF,vol:parseFloat(store.get('vol')||'.9'),sens:parseFloat(store.get('sens')||'1'),bright:parseFloat(store.get('bright')||'1'),music:parseFloat(store.get('music')||'.8'),gfx:store.get('gfx2')||DEF_GFX,crt:store.get('crt')!=='0'};
 if(!['easy','normal','hard','shara'].includes(SET.diff))SET.diff=DEF_DIFF;if(!['low','mid','high'].includes(SET.gfx))SET.gfx=DEF_GFX;
 if(!(SET.vol>=0&&SET.vol<=1))SET.vol=.9;if(!(SET.sens>=.4&&SET.sens<=2))SET.sens=1;if(!(SET.bright>=.6&&SET.bright<=1.6))SET.bright=1;if(!(SET.music>=0&&SET.music<=1))SET.music=.8;
 /* rh = internal render height in pixels: a 1990s polygon-game resolution, scaled up with hard pixel edges */
@@ -995,7 +997,8 @@ const fade=$('fade'),fadeBig=$('fadeBig'),fadeSub=$('fadeSub'),fadeNo=$('fadeNo'
 const cv=$('cv');
 let menuItems=[],sel=0,manualOpen=false,lastPauseAt=0,hudTimer=0,msgTimer=0;
 const keys={};
-function show3D(on){cv.style.display=on?'block':'none';f3d=on;}
+function crtShow(){const c=document.getElementById('crt');if(c)c.style.display=(f3d&&SET.crt)?'block':'none';}
+function show3D(on){cv.style.display=on?'block':'none';f3d=on;crtShow();}
 function showBG(on){bg.style.display=on?'block':'none';if(on)bg.style.opacity=1;bgOn=on;}
 function fadeTo(o,ms=500,bgc='#000'){fade.style.transition=`opacity ${ms}ms`;fade.style.background=bgc;fade.style.opacity=o;}
 function fadeCard(no,big,sub,col='#d33'){fadeNo.textContent=no||'';fadeBig.textContent=big||'';fadeBig.style.color=col;fadeSub.textContent=sub||'';}
@@ -1118,14 +1121,16 @@ const pauseItems=()=>[{t:'再開',f:resume},{t:'設定',f:()=>openSettings()},{t
 const FS_OK=()=>!!(document.documentElement.requestFullscreen||document.documentElement.webkitRequestFullscreen);
 const isFS=()=>!!(document.fullscreenElement||document.webkitFullscreenElement);
 const subMenu=on=>menuEl.classList.toggle('settings',on);
-function saveSet(){store.set('diff',SET.diff);store.set('vol',SET.vol);store.set('sens',SET.sens);store.set('bright',SET.bright);store.set('music',SET.music);store.set('gfx2',SET.gfx);}
+function saveSet(){store.set('diff',SET.diff);store.set('vol',SET.vol);store.set('sens',SET.sens);store.set('bright',SET.bright);store.set('music',SET.music);store.set('gfx2',SET.gfx);store.set('crt',SET.crt?'1':'0');}
 function applySettings(){
+  crtShow();
   if(typeof renderer!=='undefined'){renderer.toneMappingExposure=1.05*SET.bright;renderer.setPixelRatio(prFor());resize();}
   bgSize();
   if(master)master.gain.value=SET.vol;if(typeof musVol==='function')musVol();
 }
 function adjSet(k,d,wrap){
-  if(k==='gfx'){const L=['low','mid','high'];let i=L.indexOf(SET.gfx)+d;if(i>=L.length)i=wrap?0:L.length-1;if(i<0)i=0;SET.gfx=L[i];}
+  if(k==='crt'){SET.crt=!SET.crt;}
+  else if(k==='gfx'){const L=['low','mid','high'];let i=L.indexOf(SET.gfx)+d;if(i>=L.length)i=wrap?0:L.length-1;if(i<0)i=0;SET.gfx=L[i];}
   else{const lim={vol:[0,1,.1],music:[0,1,.1],sens:[.4,2,.1],bright:[.6,1.6,.1]}[k];let v=SET[k]+d*lim[2];if(v>lim[1]+1e-6)v=wrap?lim[0]:lim[1];if(v<lim[0]-1e-6)v=lim[0];SET[k]=Math.round(v*10)/10;}
   saveSet();applySettings();buildSettings();
 }
@@ -1137,6 +1142,7 @@ function buildSettings(){
     {t:`視点感度　‹ ${SET.sens.toFixed(1)} ›`,f:()=>adjSet('sens',1,true),a:d=>adjSet('sens',d)},
     {t:`明るさ　‹ ${pct(SET.bright)} ›`,f:()=>adjSet('bright',1,true),a:d=>adjSet('bright',d)},
     {t:`グラフィック　‹ ${{low:'低',mid:'中',high:'高'}[SET.gfx]} ›`,f:()=>adjSet('gfx',1,true),a:d=>adjSet('gfx',d)},
+    {t:`レトロ風の画面　‹ ${SET.crt?'ON':'OFF'} ›`,f:()=>adjSet('crt',1,true),a:d=>adjSet('crt',d)},
     {t:`フルスクリーン　‹ ${FS_OK()?(isFS()?'ON':'OFF'):'非対応'} ›`,f:()=>{if(FS_OK())toggleFS();else $('ach').textContent='このブラウザは全画面に対応していません。iPhoneは、共有メニューの「ホーム画面に追加」から開くと全画面になります';},a:()=>{if(FS_OK())toggleFS();}},
     {t:'セーブデータをリセット',f:()=>openResetConfirm()},
     {t:'戻る',f:closeSettings}];
@@ -1359,7 +1365,7 @@ const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x000000);
 const camera=new THREE.PerspectiveCamera(72,1,.05,140);
 camera.rotation.order='YXZ';scene.add(camera);
-function resize(){renderer.setPixelRatio(prFor());renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();}
+function resize(){renderer.setPixelRatio(prFor());document.documentElement.style.setProperty('--row',(1/prFor())+'px');renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();}
 addEventListener('resize',resize);resize();
 const maxAniso=renderer.capabilities.getMaxAnisotropy();
 const lantern=new THREE.PointLight(0xffc880,1.3,18,1.5);camera.add(lantern);
