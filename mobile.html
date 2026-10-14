@@ -472,10 +472,10 @@ function initAudio(){
   try{
     const AC=window.AudioContext||window.webkitAudioContext;try{ac=new AC({latencyHint:'playback'});}catch(e){ac=new AC();}
     muffle=ac.createBiquadFilter();muffle.type='lowpass';muffle.frequency.value=22000;
-    const lim=ac.createDynamicsCompressor();lim.threshold.value=-3;lim.knee.value=0;lim.ratio.value=20;lim.attack.value=.002;lim.release.value=.12;muffle.connect(lim);lim.connect(ac.destination);
+    const lim=ac.createDynamicsCompressor();lim.threshold.value=-5;lim.knee.value=2;lim.ratio.value=20;lim.attack.value=.002;lim.release.value=.12;muffle.connect(lim);lim.connect(ac.destination);
     anNode=ac.createAnalyser();anNode.fftSize=1024;lim.connect(anNode);
     master=ac.createGain();master.gain.value=SET.vol;
-    comp=ac.createDynamicsCompressor();comp.threshold.value=-20;comp.knee.value=18;comp.ratio.value=4;comp.attack.value=.01;comp.release.value=.3;master.connect(comp);comp.connect(muffle);
+    comp=ac.createDynamicsCompressor();comp.threshold.value=-26;comp.knee.value=20;comp.ratio.value=6;comp.attack.value=.01;comp.release.value=.3;const trim=ac.createGain();master.connect(trim);trim.connect(comp);comp.connect(muffle);setInterval(()=>{try{trim.gain.setTargetAtTime(state==='boss'?.5:1,ac.currentTime,.3);}catch(e){}},250);
     noiseBuf=ac.createBuffer(1,ac.sampleRate*2,ac.sampleRate);{const d=noiseBuf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;}
     verb=ac.createConvolver();verb.buffer=impulse(3.2,2.2);const vg=ac.createGain();vg.gain.value=.55;verb.connect(vg);vg.connect(master);
     droneG=ac.createGain();droneG.gain.value=.03;droneG.connect(master);
@@ -489,7 +489,7 @@ function initAudio(){
     loadSmp();
   }catch(e){console.error("audio init failed",e);ac=null;}
 }
-function setDread(d){if(!ac)return;const n=ac.currentTime;if(ambG)ambG.gain.setTargetAtTime(.12+.3*d,n,1.2);droneG.gain.setTargetAtTime(.03+.05*d,n,1);dissG.gain.setTargetAtTime(.055*d*d,n,1);windG.gain.setTargetAtTime(.02+.03*d,n,1);}
+function setDread(d){if(!ac)return;const n=ac.currentTime;if(ambG)ambG.gain.setTargetAtTime(.1+.15*d,n,1.2);droneG.gain.setTargetAtTime(.03+.025*d,n,1);dissG.gain.setTargetAtTime(.03*d*d,n,1);windG.gain.setTargetAtTime(.02+.015*d,n,1);}
 const send=(node,amt)=>{node.connect(master);if(amt&&!audLite){const s=ac.createGain();s.gain.value=amt;node.connect(s);s.connect(verb);}};
 function distCurve(k){const c=new Float32Array(256);for(let i=0;i<256;i++){const x=i*2/255-1;c[i]=(3+k)*x*20*(Math.PI/180)/(Math.PI+k*Math.abs(x));}return c;}
 function noiseBurst(o){try{noiseBurst0(o);}catch(e){}}
@@ -704,7 +704,7 @@ function musPlay(name){
   const cfg=MUSIC[name];if(!cfg)return;
   musStop(1.6);
   Mus.name=name;Mus.cfg=cfg;Mus.step=0;Mus.on=true;Mus.inten=cfg.inten||0;Mus.deg=0;
-  const o=ac.createGain();o.gain.value=0;o.connect(master);Mus.out=o;Mus.mg=/^boss/.test(name)?.55:1;o.gain.setTargetAtTime(SET.music*1.5*Mus.mg,ac.currentTime+.2,.8);
+  const o=ac.createGain();o.gain.value=0;o.connect(master);Mus.out=o;Mus.mg=/^boss/.test(name)?.3:1;o.gain.setTargetAtTime(SET.music*1.5*Mus.mg,ac.currentTime+.2,.8);
   Mus.next=ac.currentTime+.15;Mus.iv=setInterval(musTick,60);
 }
 function musDuck(sec=2.4){if(!ac||!Mus.out)return;const o=Mus.out,n=ac.currentTime;o.gain.cancelScheduledValues(n);o.gain.setTargetAtTime(SET.music*.2,n,.05);o.gain.setTargetAtTime(SET.music*1.5*(Mus.mg||1),n+sec,.8);}
@@ -1879,6 +1879,22 @@ function buildNamuru(z,R){
     const em=glowMat(0xf4eccc);hEyes.push(em);const eg=new THREE.Mesh(new THREE.SphereGeometry(.13,10,8),em);eg.position.set(ex,ey,0);halo.add(eg);
     const pu=new THREE.Mesh(new THREE.SphereGeometry(.06,8,6),glowMat(0x000000));pu.position.set(ex,ey,.1);halo.add(pu);}
   const halo2=new THREE.Mesh(new THREE.TorusGeometry(2.1,.03,8,72),haloM2);halo2.position.set(0,5.4,-.7);halo2.rotation.x=.35;mon.add(halo2);
+  /* shara: a truly golden, godlike form */
+  const shFx=[];
+  if(SHARA()){
+    ivory.color.setHex(0xfff0bd);ivory.emissive.setHex(0xb88a20);ivory.emissiveIntensity=.6;ivory.metalness=.35;ivory.roughness=.28;
+    ivoryDS.color.setHex(0xffe9a8);ivoryDS.emissive.setHex(0xa87a18);ivoryDS.emissiveIntensity=.55;ivoryDS.metalness=.3;
+    goldM.color.setHex(0xffd24a);goldM.emissive.setHex(0xc8901a);goldM.emissiveIntensity=.9;goldM.metalness=.9;goldM.roughness=.18;
+    haloM.color.setHex(0xfff2b0);haloM2.color.setHex(0xffc84a);
+    for(const [r,y,rx,c] of [[2.6,5.65,0,0xffd860],[3.2,5.65,0,0xffe8a0],[2.35,5.2,.55,0xffc040]]){const t=new THREE.Mesh(new THREE.TorusGeometry(r,.035,8,96),new THREE.MeshBasicMaterial({color:c}));t.position.set(0,y,-.9);t.rotation.x=rx;mon.add(t);shFx.push({m:t,k:rx?'tilt':'spin',s:r>3?-.18:.12});}
+    const rayTex=(()=>{const c=document.createElement('canvas');c.width=64;c.height=256;const g=c.getContext('2d'),gr=g.createLinearGradient(0,0,0,256);gr.addColorStop(0,'rgba(255,230,140,0)');gr.addColorStop(.5,'rgba(255,220,120,.55)');gr.addColorStop(1,'rgba(255,210,100,0)');g.fillStyle=gr;g.fillRect(0,0,64,256);const x=g.createLinearGradient(0,0,64,0);x.addColorStop(0,'rgba(0,0,0,1)');x.addColorStop(.5,'rgba(0,0,0,0)');x.addColorStop(1,'rgba(0,0,0,1)');g.globalCompositeOperation='destination-out';g.fillStyle=x;g.fillRect(0,0,64,256);return new THREE.CanvasTexture(c);})();
+    const rays=new THREE.Group();rays.position.set(0,5.4,-1.5);mon.add(rays);
+    for(let i=0;i<14;i++){const m=new THREE.Mesh(new THREE.PlaneGeometry(.9+Math.random()*.9,11+Math.random()*5),new THREE.MeshBasicMaterial({map:rayTex,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide,opacity:.55}));const pv=new THREE.Group();pv.rotation.z=i/14*Math.PI*2;m.position.y=m.geometry.parameters.height/2;pv.add(m);rays.add(pv);}
+    shFx.push({m:rays,k:'spin',s:.05});
+    const dg=new THREE.BufferGeometry(),dn=90,dp=new Float32Array(dn*3);for(let i=0;i<dn;i++){dp[i*3]=(Math.random()-.5)*9;dp[i*3+1]=Math.random()*8;dp[i*3+2]=(Math.random()-.5)*4;}dg.setAttribute('position',new THREE.BufferAttribute(dp,3));
+    const dust=new THREE.Points(dg,new THREE.PointsMaterial({color:0xffe28a,size:.14,transparent:true,opacity:.85,blending:THREE.AdditiveBlending,depthWrite:false}));dust.position.set(0,0,.2);mon.add(dust);shFx.push({m:dust,k:'dust'});
+    const gl=new THREE.PointLight(0xffd070,2.2,22);gl.position.set(0,4.5,2.5);mon.add(gl);
+  }
   /* six long arms */
   const arms=[];
   for(const [sd,sy,pose] of [[-1,4.15,'pray'],[1,4.15,'pray'],[-1,3.65,'out'],[1,3.65,'out'],[-1,3.15,'low'],[1,3.15,'low']]){
@@ -1941,14 +1957,16 @@ function buildNamuru(z,R){
     if(on){nl.color.setHex(0xffe8a0);nl.intensity=2.4;hg.material.color.setHex(0xfff0c0);}
     else{nl.color.setHex(isP2?0xff3040:0xffe6b0);nl.intensity=isP2?.6:1;hg.material.color.setHex(isP2?0xff2030:0xffd890);}};
   const phase2=()=>{
+    if(SHARA()){for(const m of [ivory,ivoryDS]){m.color.setHex(0x7a5410);m.emissive.setHex(0xc88a10);m.emissiveIntensity=.7;m.roughness=.3;m.metalness=.85;}goldM.color.setHex(0xffc030);goldM.emissive.setHex(0xe8a010);goldM.emissiveIntensity=1.1;}else{
     for(const m of [ivory,ivoryDS]){m.color.setHex(0x040204);m.emissive.setHex(SHARA()?0x2a1a04:0x0e0204);m.emissiveIntensity=.5;m.roughness=.8;}
-    goldM.color.setHex(0x0a0204);goldM.emissive.setHex(SHARA()?0x3a2808:0x1a0306);goldM.emissiveIntensity=.35;goldM.metalness=.2;
+    goldM.color.setHex(0x0a0204);goldM.emissive.setHex(SHARA()?0x3a2808:0x1a0306);goldM.emissiveIntensity=.35;goldM.metalness=.2;}
     faceMat.map=faceTex2;faceMat.emissiveMap=faceTex2;faceMat.needsUpdate=true;
     const S=SHARA();hEyes.forEach(m=>m.color.setHex(S?0xffc030:0xff2030));haloM.color.setHex(S?0xffd45a:0xff2a3a);haloM2.color.setHex(S?0xb88a20:0xa01020);hg.material.color.setHex(S?0xffc030:0xff2030);
     p2.visible=true;isP2=true;nl.color.setHex(S?0xffc060:0xff3040);nl.intensity=.6;blk.emissive.setHex(S?0x2a1a04:0x120204);blk.emissiveIntensity=.5;
   };
   const anim=(tt,sp,vul)=>{
     halo.rotation.z=tt*(isP2?.5:.22);halo2.rotation.z=-tt*(isP2?.35:.15);
+    for(const e of shFx){if(e.k==='spin')e.m.rotation.z=tt*e.s*(isP2?1.8:1);else if(e.k==='tilt'){e.m.rotation.z=tt*.2;e.m.rotation.y=Math.sin(tt*.4)*.3;}else{const p=e.m.geometry.attributes.position;for(let i=0;i<p.count;i++){let y=p.getY(i)+.012+(i%7)*.002;if(y>8)y=0;p.setY(i,y);}p.needsUpdate=true;}}
     for(const a of arms){a.piv.rotation.z=a.sd*Math.sin(tt*.7+a.ph)*.07;a.piv.rotation.x=Math.sin(tt*.5+a.ph)*.06;}
     hair.forEach((p,k)=>{p.rotation.z=Math.sin(tt*.8+k)*.12;p.rotation.x=Math.sin(tt*.6+k*1.7)*.08;});
     if(isP2){
