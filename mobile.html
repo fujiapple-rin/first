@@ -2687,6 +2687,7 @@ const bossHudEl=$('bossHud'),bossFill=$('bossFill'),heartsEl=$('hearts'),hurtEl=
 const projMat=new THREE.SpriteMaterial({map:flameTex,color:0xff4030,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true});
 const homMat=new THREE.SpriteMaterial({map:flameTex,color:0xb0102a,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true});
 const relicMat=new THREE.SpriteMaterial({map:flameTex,color:0xfff0b0,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true});
+const goldProjMat=new THREE.SpriteMaterial({map:flameTex,color:0xffc040,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true});
 const spikeMat=std(0xe6dcc0,.4),warnMat=new THREE.MeshBasicMaterial({color:0xff2a2a,transparent:true,opacity:.5,side:THREE.DoubleSide,depthWrite:false});
 const curtMat=new THREE.MeshStandardMaterial({color:0x06030a,roughness:.5,emissive:0x400010,emissiveIntensity:.9}),gapMat=new THREE.MeshBasicMaterial({color:0xffe0a0,transparent:true,opacity:.3,depthWrite:false});
 function heartsText(p,max){const f=Math.floor(p+1e-9),fr=Math.round((p-f)*4),part=['','◔','◑','◕'][fr]||'';return '♥'.repeat(f)+part+'♡'.repeat(Math.max(0,max-f-(part?1:0)));}
@@ -2738,7 +2739,35 @@ function bossThrow(){
   boss.thr.push({sp,v:{x:dir.x*22,y:dir.y*22,z:dir.z*22},life:0});
   if(ac){osc({f0:900,f1:300,dur:.3,vol:.12,send:.6});noiseBurst({dur:.25,f0:3000,f1:600,vol:.15,type:'bandpass',q:2,send:.4});}
 }
+/* ---- shara only: its own attack shapes ---- */
+/* rapid aimed lances: fired one after another, each at where you are now */
+function fireLances(){
+  const B=boss,n=B.phase===2?4:3;
+  for(let i=0;i<n;i++)setTimeout(()=>{
+    if(boss!==B||state!=='boss'||B.swordPhase)return;
+    const ox=rnd(-1.8,1.8),oy=6.3+rnd(-.7,.7),oz=B.nz-.4,sp=new THREE.Sprite(goldProjMat);sp.scale.set(1.15,1.15,1);sp.position.set(ox,oy,oz);bossG.add(sp);
+    const tx=P.x,tz=P.z,d=Math.hypot(tx-ox,1.3-oy,tz-oz)||1,spd=10;
+    B.proj.push({sp,vx:(tx-ox)/d*spd,vy:(1.3-oy)/d*spd,vz:(tz-oz)/d*spd,life:4});
+    if(ac){noiseBurst({dur:.3,f0:3200,f1:700,vol:.2,type:'bandpass',q:3,send:.5});osc({f0:1400,f1:420,dur:.28,vol:.13,send:.7});}
+  },i*230);
+  if(ac)bell(293);
+}
+/* a wave of spikes runs along the floor from Namu toward you; step out of the line */
+function spawnSpikeWave(){
+  const B=boss,lanes=B.phase===2?2:1,len=6;
+  for(let L=0;L<lanes;L++){
+    const x0=clamp(P.x+(L?(Math.random()<.5?-3.4:3.4):rnd(-.6,.6)),-F.w/2+1.5,F.w/2-1.5),zA=B.nz+7,zB=Math.max(zA+4,P.z+3);
+    for(let i=0;i<len;i++){
+      const zz=zA+i*(zB-zA)/(len-1);
+      const ring=new THREE.Mesh(new THREE.RingGeometry(.7,1.25,28),warnMat);ring.rotation.x=-Math.PI/2;ring.position.set(x0,.03,zz);bossG.add(ring);
+      B.spikes.push({ring,x:x0,z:zz,t:-i*.16,cone:null,hit:false});
+    }
+  }
+  if(ac){growl(.3,1.4);bell(220);}
+  say('床を走る棘の波……線から外れろ！',1800);
+}
 function fireVolley(){
+  if(SHARA()){fireLances();return;}
   const n=(boss.phase===2?3:(boss.hp<=3?3:2))+(SHARA()&&boss.phase===1?1:0);
   for(let i=0;i<n;i++){
     const a=Math.random()*Math.PI*2,ox=Math.cos(a)*1.8,oy=6.3+Math.sin(a)*1.8,oz=boss.nz-.4;
@@ -2766,6 +2795,7 @@ function spawnCurtain(){
   if(ac){growl(.3,1.2);noiseBurst({dur:.8,f0:300,f1:60,vol:.3,type:'lowpass',send:.4});}
 }
 function spawnSpikes(){
+  if(SHARA()){spawnSpikeWave();return;}
   const n=boss.phase===2?5:(boss.hp<=3?4:3);
   for(let i=0;i<n;i++){
     const x=clamp(P.x+rnd(-3,3),-F.w/2+1.5,F.w/2-1.5),zz=clamp(P.z+rnd(-3,3),boss.nz+6,P.z+4);
@@ -2878,8 +2908,8 @@ const skullTex=mk(64,64,(g,w,h)=>{g.clearRect(0,0,w,h);const gr=g.createRadialGr
   g.fillStyle='#f0e6d0';g.beginPath();g.arc(32,28,13,0,7);g.fill();g.fillRect(25,36,14,10);g.fillStyle='#200';g.beginPath();g.arc(27,28,4,0,7);g.arc(37,28,4,0,7);g.fill();g.fillRect(31,34,2,4);g.fillRect(27,43,2,4);g.fillRect(31,43,2,4);g.fillRect(35,43,2,4);});
 const skullMat=new THREE.SpriteMaterial({map:skullTex,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true});
 /* a fan of shots with a gap right where you stand (even count, so the aimed centre is open) */
-function fireFan(ox,oy,oz,n,spread,spd,mat,sc){
-  const base=Math.atan2(P.x-ox,P.z-oz),hd=Math.hypot(P.x-ox,P.z-oz)||1,dist=Math.hypot(hd,1.3-oy)||1;
+function fireFan(ox,oy,oz,n,spread,spd,mat,sc,off){
+  const base=Math.atan2(P.x-ox,P.z-oz)+(off||0),hd=Math.hypot(P.x-ox,P.z-oz)||1,dist=Math.hypot(hd,1.3-oy)||1;
   for(let i=0;i<n;i++){
     const a=base+(n>1?(i/(n-1)-.5)*spread:0),sp=new THREE.Sprite(mat);sp.scale.set(sc,sc,1);sp.position.set(ox,oy,oz);bossG.add(sp);
     const vh=spd*hd/dist;boss.proj.push({sp,vx:Math.sin(a)*vh,vy:(1.3-oy)*spd/dist,vz:Math.cos(a)*vh,life:5});
@@ -3059,6 +3089,7 @@ function bossHurt(){
   if(adm.god||boss.inv>0)return;
   boss.php--;boss.inv=2.2;bossHud();
   hurtEl.style.opacity=1;setTimeout(()=>hurtEl.style.opacity=0,350);shakeAmt=.05;
+  if(SHARA()){shakeAmt=.1;fadeTo(.5,40,'#ffd45a');setTimeout(()=>fadeTo(0,380),80);if(ac){osc({f0:300,f1:110,dur:.6,vol:.22,send:.8});bell(147);}}
   if(ac){bigStep(.9);noiseBurst({dur:.3,f0:3000,f1:300,vol:.4,type:'bandpass',q:2,send:.3});}
   try{navigator.vibrate&&navigator.vibrate([60,30,90]);}catch(e){}
   if(boss.php<=0)bossDie();
@@ -3212,7 +3243,8 @@ function bossUpdate(dt){
   B.minT-=dt;if(B.minT<=0&&!bossVuln){B.minT=(P2?rnd(20,28):rnd(25,35))*NF();if(B.mins.filter(m=>!m.dying).length<(P2?3:2)+(SHARA()?1:0))spawnMinion();}
   if(P2){B.spT-=dt;if(B.spT<=0&&!bossVuln&&!B.ult){B.spT=(B.rage?rnd(3.2,4.5):rnd(4.8,6.5))*NF();
     const pool=['meteor','sweep','fan'].filter(k=>k!==B.lastSp),k=pool[Math.random()*pool.length|0];B.lastSp=k;
-    if(k==='meteor')spawnMeteors();else if(k==='sweep')spawnSweep(Math.random()<.5?-1:1);else{fireFan(0,6.3,B.nz-.4,8,1.5,7.5,projMat,1.0);say('ナムルの怒りの弾幕……隙間に入れ！',1800);}}}
+    if(k==='meteor')spawnMeteors();else if(k==='sweep')spawnSweep(Math.random()<.5?-1:1);else if(SHARA()){fireFan(0,6.3,B.nz-.4,8,1.5,7.5,goldProjMat,1.0);setTimeout(()=>{if(boss===B&&state==='boss'&&!B.swordPhase)fireFan(0,6.3,B.nz-.4,8,1.5,7.5,goldProjMat,1.0,Math.random()<.5?.5:-.5);},850);say('金の弾幕が二度……隙間を探せ！',1900);}
+    else{fireFan(0,6.3,B.nz-.4,8,1.5,7.5,projMat,1.0);say('ナムルの怒りの弾幕……隙間に入れ！',1800);}}}
   if(updateHands(dt)||updateMinions(dt)||updateMore(dt))return;
   for(let i=B.proj.length-1;i>=0;i--){
     const p=B.proj[i],s=p.sp;
