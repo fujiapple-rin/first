@@ -986,7 +986,7 @@ function buildTitle(){
     if(hero){const st=hjStyle(ch,idx);setTimeout(()=>{s.style.fontFamily=st.font;s.style.fontSize=st.size+'em';s.classList.add('snap');setTimeout(()=>s.classList.remove('snap'),240);},900+idx*160);}
   };
   /* after the shara ending the hero rewrites the title himself: the old words stay, struck through, above his new ones */
-  const lines=curTheme==='shara'?[[{old:'タジルゲート',nw:'私の聖堂'},'において'],[{old:'さようなら',nw:'ようこそ。'}]]:[['タジルゲートにおいて'],['さようなら']];
+  const lines=curTheme==='shara'?[[{old:'タジルゲート',nw:'私の聖堂'},{old:'において',nw:'へ'}],[{old:'さようなら',nw:'ようこそ。'}]]:[['タジルゲートにおいて'],['さようなら']];
   lines.forEach((line,li)=>{
     line.forEach(part=>{
       if(typeof part==='string'){[...part].forEach(ch=>addChar(ch,tt));return;}
@@ -1263,7 +1263,7 @@ async function playCredits(tk){
 function showFin(title,sub,warm,hint,theme){
   finOpen=!!sub;
   let tHtml=title;
-  if(theme==='shara'&&title.indexOf('おいてさようなら')>=0)title='<span class="edit"><s>タジルゲート</s>'+hjSpans('私の聖堂')+'</span>に<br>おいて<span class="edit"><s>さようなら</s>'+hjSpans('ようこそ。')+'</span>';
+  if(theme==='shara'&&title.indexOf('おいてさようなら')>=0)title='<span class="edit"><s>タジルゲート</s>'+hjSpans('私の聖堂')+'</span><span class="edit"><s>において</s>'+hjSpans('へ')+'</span><br><span class="edit"><s>さようなら</s>'+hjSpans('ようこそ。')+'</span>';
   tHtml=title;
   if(theme==='namuru'){tHtml=title.split('<br>').map(l=>[...l].map(ch=>'<span class="c" style="--dx:'+rnd(-1.5,1.5).toFixed(1)+'px;--dy:'+rnd(-4,4).toFixed(1)+'px;--r:'+rnd(-4,4).toFixed(1)+'deg;--d:'+rnd(1.6,4.5).toFixed(1)+'s">'+ch+'</span>').join('')).join('<br>');}
   $('finTitle').innerHTML=tHtml;$('finSub').textContent=sub;$('finHint').textContent=hint||'';$('fin').classList.toggle('warm',!!warm);$('fin').classList.toggle('hardfin',theme==='hard');$('fin').classList.toggle('sharafin',theme==='shara');$('fin').classList.toggle('namurufin',theme==='namuru');
@@ -2729,6 +2729,42 @@ function fireHoming(){
   }
   if(ac){growl(.35,1.4);osc({f0:120,f1:60,dur:.6,vol:.15,send:.7});}
 }
+/* ---- Namu's face laser: a thin line is drawn first, then a thick beam from his face sweeps sideways. shara fires two, from opposite sides ---- */
+function spawnLaser(){
+  const B=boss;B.lasers=B.lasers||[];
+  const sg=SHARA(),n=sg?2:1,ez=clamp(P.z+2,B.nz+10,6);
+  for(let i=0;i<n;i++){
+    const x0=clamp(i?(P.x>0?-3.4:3.4):P.x,-F.w/2+1.5,F.w/2-1.5),side=i?(x0<0?1:-1):(P.x>=0?-1:1);
+    const col=sg?0xffc040:0xff2030,add=(c,op)=>new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:op,blending:THREE.AdditiveBlending,depthWrite:false});
+    const g=new THREE.Group(),tele=new THREE.Mesh(new THREE.BoxGeometry(.1,.1,1),add(col,.6)),beam=new THREE.Mesh(new THREE.BoxGeometry(.8,.8,1),add(sg?0xfff2c0:0xffe0e0,.95)),glow=new THREE.Mesh(new THREE.BoxGeometry(1.9,1.9,1),add(col,.35));
+    beam.visible=false;glow.visible=false;g.add(tele,glow,beam);bossG.add(g);
+    B.lasers.push({g,tele,beam,glow,tx:x0,x:x0,side,ez,t:-i*.6,warn:sg?1.4:1.6,act:1.1,hit:false,fired:false});
+  }
+  if(ac){growl(.35,1.8);osc({f0:180,f1:1100,dur:1.5,vol:.12,send:.8});}
+  say(sg?'顔から、金の光が二筋……挟まれる！':'ナムルの顔が光る……線の上から外れろ！',2000);
+}
+function updateLasers(dt){
+  const B=boss;if(!B.lasers||!B.lasers.length)return false;
+  const fx=0,fy=6.3,fz=B.nz-.4;
+  for(let i=B.lasers.length-1;i>=0;i--){
+    const L=B.lasers[i];
+    if(!L.g.parent){B.lasers.splice(i,1);continue;}
+    L.t+=dt;if(L.t<0){L.tele.visible=false;continue;}
+    const act=L.t>=L.warn;
+    if(act){const k=Math.min(L.t-L.warn,L.act);L.x=L.tx+L.side*3*k;
+      if(!L.fired){L.fired=true;shakeAmt=Math.max(shakeAmt,.07);fadeTo(.35,40,SHARA()?'#ffe9a0':'#ffb0b0');setTimeout(()=>fadeTo(0,300),70);if(ac){screech();noiseBurst({dur:1,f0:3500,f1:600,vol:.3,type:'bandpass',q:2,send:.4});}}}
+    const ex=L.x,ey=.5,ez=L.ez,dx=ex-fx,dy=ey-fy,dz=ez-fz,len=Math.hypot(dx,dy,dz);
+    L.g.position.set((fx+ex)/2,(fy+ey)/2,(fz+ez)/2);L.g.lookAt(ex,ey,ez);
+    L.tele.visible=!act;L.beam.visible=act;L.glow.visible=act;
+    L.tele.scale.z=L.beam.scale.z=L.glow.scale.z=len;
+    if(!act)L.tele.material.opacity=.25+.45*Math.abs(Math.sin(L.t*(6+L.t*8)));
+    else{const e=L.t-L.warn;L.glow.material.opacity=.3+.15*Math.sin(e*40);
+      if(e>L.act){bossG.remove(L.g);B.lasers.splice(i,1);continue;}
+      const t=clamp(((P.x-fx)*dx+(1.3-fy)*dy+(P.z-fz)*dz)/(len*len),0,1),d=Math.hypot(P.x-(fx+dx*t),1.3-(fy+dy*t),P.z-(fz+dz*t));
+      if(!L.hit&&d<.95){L.hit=true;bossHurt();if(state!=='boss')return true;}}
+  }
+  return false;
+}
 function spawnCurtain(){
   const w=F.w,gapW=3.4,gx=rnd(-w/2+3,w/2-3),segL=(gx-gapW/2)+w/2,segR=w/2-(gx+gapW/2);
   const grp=new THREE.Group();grp.position.z=boss.nz+5;
@@ -3186,10 +3222,10 @@ function bossUpdate(dt){
   B.handT-=dt;if(B.handT<=0&&!bossVuln){B.handT=(P2?rnd(5,6.5):rnd(7,9))*(SHARA()?.8:1)*NF();if(SHARA()||!P2)spawnHands();}
   B.minT-=dt;if(B.minT<=0&&!bossVuln){B.minT=(P2?rnd(20,28):rnd(25,35))*NF();if(B.mins.filter(m=>!m.dying).length<(P2?3:2)+(SHARA()?1:0))spawnMinion();}
   if(P2){B.spT-=dt;if(B.spT<=0&&!bossVuln&&!B.ult){B.spT=(B.rage?rnd(3.2,4.5):rnd(4.8,6.5))*NF();
-    const pool=['meteor','sweep','fan'].filter(k=>k!==B.lastSp),k=pool[Math.random()*pool.length|0];B.lastSp=k;
-    if(k==='meteor')spawnMeteors();else if(k==='sweep')spawnSweep(Math.random()<.5?-1:1);else if(SHARA()){fireFan(0,6.3,B.nz-.4,8,1.5,7.5,goldProjMat,1.0);setTimeout(()=>{if(boss===B&&state==='boss'&&!B.swordPhase)fireFan(0,6.3,B.nz-.4,8,1.5,7.5,goldProjMat,1.0,Math.random()<.5?.5:-.5);},850);say('金の弾幕が二度……隙間を探せ！',1900);}
+    const pool=['meteor','sweep','fan','laser'].filter(k=>k!==B.lastSp),k=pool[Math.random()*pool.length|0];B.lastSp=k;
+    if(k==='meteor')spawnMeteors();else if(k==='sweep')spawnSweep(Math.random()<.5?-1:1);else if(k==='laser')spawnLaser();else if(SHARA()){fireFan(0,6.3,B.nz-.4,8,1.5,7.5,goldProjMat,1.0);setTimeout(()=>{if(boss===B&&state==='boss'&&!B.swordPhase)fireFan(0,6.3,B.nz-.4,8,1.5,7.5,goldProjMat,1.0,Math.random()<.5?.5:-.5);},850);say('金の弾幕が二度……隙間を探せ！',1900);}
     else{fireFan(0,6.3,B.nz-.4,8,1.5,7.5,projMat,1.0);say('ナムルの怒りの弾幕……隙間に入れ！',1800);}}}
-  if(updateHands(dt)||updateMinions(dt)||updateMore(dt))return;
+  if(updateHands(dt)||updateMinions(dt)||updateMore(dt)||updateLasers(dt))return;
   for(let i=B.proj.length-1;i>=0;i--){
     const p=B.proj[i],s=p.sp;
     if(p.hom&&(p.ht=(p.ht||0)+dt)<1.5){/* homing only for the first 1.5 s, then it flies straight */const dx=P.x-s.position.x,dy=1.3-s.position.y,dz=P.z-s.position.z,d=Math.hypot(dx,dy,dz)||1,sp=3.5;
