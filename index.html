@@ -986,7 +986,7 @@ function buildTitle(){
     if(hero){const st=hjStyle(ch,idx);setTimeout(()=>{s.style.fontFamily=st.font;s.style.fontSize=st.size+'em';s.classList.add('snap');setTimeout(()=>s.classList.remove('snap'),240);},900+idx*160);}
   };
   /* after the shara ending the hero rewrites the title himself: the old words stay, struck through, above his new ones */
-  const lines=curTheme==='shara'?[[{old:'タジルゲート',nw:'私の聖堂'},{old:'において',nw:'へ'}],[{old:'さようなら',nw:'ようこそ。'}]]:[['タジルゲートにおいて'],['さようなら']];
+  const lines=curTheme==='shara'?[[{old:'タジルゲート',nw:'私の聖堂'},'において'],[{old:'さようなら',nw:'ようこそ。'}]]:[['タジルゲートにおいて'],['さようなら']];
   lines.forEach((line,li)=>{
     line.forEach(part=>{
       if(typeof part==='string'){[...part].forEach(ch=>addChar(ch,tt));return;}
@@ -1263,7 +1263,7 @@ async function playCredits(tk){
 function showFin(title,sub,warm,hint,theme){
   finOpen=!!sub;
   let tHtml=title;
-  if(theme==='shara'&&title.indexOf('おいてさようなら')>=0)title='<span class="edit"><s>タジルゲート</s>'+hjSpans('私の聖堂')+'</span><span class="edit"><s>において</s>'+hjSpans('へ')+'</span><br><span class="edit"><s>さようなら</s>'+hjSpans('ようこそ。')+'</span>';
+  if(theme==='shara'&&title.indexOf('おいてさようなら')>=0)title='<span class="edit"><s>タジルゲート</s>'+hjSpans('私の聖堂')+'</span>に<br>おいて<span class="edit"><s>さようなら</s>'+hjSpans('ようこそ。')+'</span>';
   tHtml=title;
   if(theme==='namuru'){tHtml=title.split('<br>').map(l=>[...l].map(ch=>'<span class="c" style="--dx:'+rnd(-1.5,1.5).toFixed(1)+'px;--dy:'+rnd(-4,4).toFixed(1)+'px;--r:'+rnd(-4,4).toFixed(1)+'deg;--d:'+rnd(1.6,4.5).toFixed(1)+'s">'+ch+'</span>').join('')).join('<br>');}
   $('finTitle').innerHTML=tHtml;$('finSub').textContent=sub;$('finHint').textContent=hint||'';$('fin').classList.toggle('warm',!!warm);$('fin').classList.toggle('hardfin',theme==='hard');$('fin').classList.toggle('sharafin',theme==='shara');$('fin').classList.toggle('namurufin',theme==='namuru');
